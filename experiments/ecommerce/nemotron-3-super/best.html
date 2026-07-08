@@ -2,423 +2,349 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PawNutri – Premium Dog Food</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PawNutri - Premium Dog Food</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  :root {
-    --bg: #faf8f5;
-    --primary: #8b5e3c;
-    --accent: #d4a373;
-    --light: #fff8f0;
-    --text: #333;
-    --muted: #666;
+  :root{
+    --bg:#fff8e1;
+    --primary:#ffab91;
+    --dark:#5d4037;
+    --light:#fbe9e7;
+    --shadow:0 2px 8px rgba(0,0,0,0.15);
   }
-  * { box-sizing: border-box; margin:0; padding:0; }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
-  a { text-decoration:none; color:inherit; }
-  header {
-    background: var(--primary);
-    color: var(--light);
-    padding: 1rem;
-    display:flex; align-items:center; justify-content:space-between;
-    position:relative;
-  }
-  header h1 { font-size:1.8rem; }
-  .cart-icon { position:relative; cursor:pointer; font-size:1.5rem; }
-  .cart-badge {
-    position:absolute; top:-8px; right:-8px; background:#e53935;
-    color:#fff; border-radius:50%; padding:2px 6px; font-size:0.75rem;
-  }
-  #hero { height:60vh; position:relative; overflow:hidden; background:#fff8f0; }
-  #threeCanvas { width:100%; height:100%; display:block; }
-  main { padding:2rem; max-width:1200px; margin:auto; }
-  .products { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:1.5rem; }
-  .product-card {
-    background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);
-    transition:transform .2s, box-shadow .2s;
-  }
-  .product-card:hover { transform:translateY(-4px); box-shadow:0 4px 12px rgba(0,0,0,0.15); }
-  .product-card img { width:100%; height:180px; object-fit:cover; background:#eee; }
-  .product-card .info { padding:1rem; }
-  .product-card h3 { margin-bottom:.5rem; font-size:1.2rem; color:var(--primary); }
-  .product-card p { color:var(--muted); margin-bottom:1rem; flex-grow:1; }
-  .product-card .price { font-weight:600; color:var(--primary); margin-bottom:.5rem; }
-  .product-card button {
-    width:100%; background:var(--primary); color:#fff; border:none;
-    padding:.75rem; font-size:1rem; border-radius:6px; cursor:pointer;
-    transition:background .2s;
-  }
-  .product-card button:hover { background:#6f4a2e; }
-  /* Cart Sidebar */
-  #cartSidebar {
-    position:fixed; top:0; right:-350px; width:300px; height:100vh;
-    background:#fff; box-shadow:-2px 0 8px rgba(0,0,0,0.15);
-    transition:right .3s ease; z-index:1000; overflow-y:auto;
-    padding:1.5rem;
-  }
-  #cartSidebar.open { right:0; }
-  #cartSidebar h2 { margin-bottom:1rem; color:var(--primary); }
-  .cart-item { display:flex? Actually we need proper CSS: */
-  .cart-item { display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; border-bottom:1px solid #eee; }
-  .cart-item-info { flex:1; }
-  .cart-item-controls { display:flex; gap:.5rem; align-items:center; }
-  .cart-item-controls input[type="number"] { width:50px; text-align:center; }
-  .cart-total { margin-top:1.5rem; font-size:1.2rem; text-align:right; }
-  .cart-total span { font-weight:600; }
-  #checkoutBtn, #continueShopping {
-    width:100%; margin-top:1rem; padding:.75rem; border:none;
-    border-radius:6px; font-size:1rem; cursor:pointer;
-  }
-  #checkoutBtn { background:var(--primary); color:#fff; }
-  #continueShopping { background:#eee; color:#333; }
-  #checkoutForm { display:flex; flex-direction:column; gap:.8rem; }
-  #checkoutForm input { padding:.75rem; border:1px solid #ccc; border-radius:6px; font-size:1rem; }
-  #checkoutForm button { background:var(--primary); color:#fff; border:none; padding:.75rem; border-radius:6px; cursor:pointer; }
-  #checkoutForm button:hover { opacity:.9; }
-  #confirmation { text-align:center; padding:2rem; color:var(--primary); font-size:1.2rem; display:none; }
-  @media (max-width:768px) {
-    header { flex-wrap:wrap; gap:.5rem; }
-    .products { grid-template-columns:1fr; }
-    #cartSidebar { width:100%; right:-100%; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--dark);line-height:1.6}
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  header{background:var(--primary);color:#fff;padding:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap}
+  header .logo{font-size:1.5rem;font-weight:bold}
+  header .cart{position:relative}
+  header .cart-count{position:absolute;top:-8px;right:-8px;background:#fff;color:var(--primary);border-radius:50%;width:18px;height:18px;font-size:0.75rem;display:flex;align-items:center;justify-content:center}
+  .hero{position:relative;width:100%;height:60vh;overflow:hidden;background:#f5f5f5}
+  .hero canvas{display:block;width:100%;height:100%}
+  .products{max-width:1200px;margin:2rem auto;padding:0 1rem}
+  .products h2{text-align:center;margin-bottom:1.5rem;color:var(--dark)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+  .card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s}
+  .card:hover{transform:translateY(-4px)}
+  .card img{width:100%;height:180px;object-fit:cover}
+  .card-body{padding:1rem}
+  .card h3{margin:0 0 .5rem;font-size:1.2rem}
+  .card p{margin:0 0 1rem;font-size:.9rem;color:#555}
+  .card button{width:100%;background:var(--primary);color:#fff;border:none;padding:.75rem;border-radius:4px;cursor:font-size:1rem}
+  .card button:hover{background:#e68a70}
+  .cart-section{max-width:400px;margin:2rem auto;padding:1rem;background:#fff;border-radius:8px;box-shadow:var(--shadow)}
+  .cart-section h2{text-align:center;margin-bottom:1rem}
+  .cart-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #eee}
+  .cart-item-info{flex:1}
+  .cart-item-quantity{display:flex;align-items:center;gap:.5rem}
+  .cart-item-quantity button{background:#eee;border:none;width:24px;height:24px;border-radius:3px;cursor:pointer}
+  .cart-total{margin-top:1rem;font-size:1.2rem;text-align:right}
+  .checkout-btn{display:block;width:100%;margin-top:1rem;background:var(--primary);color:#fff;border:none;padding:.8rem;border-radius:4px;cursor:pointer;font-size:1rem}
+  .checkout-btn:hover{background:#e68a70}
+  .checkout-form{display:none;max-width:400px;margin:2rem auto;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:var(--shadow)}
+  .checkout-form h2{text-align:center;margin-bottom:1.5rem}
+  .checkout-form label{display:block;margin-bottom:.5rem;font-weight:bold}
+  .checkout-form input{width:100%;padding:.5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:4px}
+  .checkout-form button{width:100%;background:var(--primary);color:#fff;border:none;padding:.8rem;border-radius:4px;cursor:pointer;font-size:1rem}
+  .checkout-form button:hover{background:#e68a70}
+  .confirmation{display:none;max-width:400px;margin:2rem auto;padding:2rem;text-align:center;background:#fff;border-radius:8px;box-shadow:var(--shadow)}
+  .confirmation h2{color:var(--primary)}
+  .confirmation p{margin-top:1rem}
+  footer{text-align:center;padding:1.5rem;font-size:.9rem;color:#777}
+  @media(max-width:480px){
+    header{flex-direction:column;gap:.5rem}
+    header .cart{margin-top:.5rem}
   }
 </style>
 </head>
 <body>
-
 <header>
-  <h1>PawNutri</h1>
+  <div class="logo">PawNutri</div>
   <div>
-    <span class="cart-icon" id="cartToggle">🛒</span>
-    <span class="cart-badge" id="cartBadge">0</span>
+    <span>Cart:</span>
+    <div class="cart" id="cartContainer">
+      <span class="cart-count" id="cartCount">0</span>
+    </div>
   </div>
 </header>
 
-<section id="hero">
-  <canvas id="threeCanvas"></canvas>
+<section class="hero">
+  <canvas id="heroCanvas"></canvas>
 </section>
 
-<main>
-  <section class="products" id="productGrid">
-    <!-- Products will be injected here -->
-  </section>
-</main>
+<section class="products">
+  <h2>Our Products</h2>
+  <div id="productGrid" class="grid"></div>
+</section>
 
-<!-- Cart Sidebar -->
-<aside id="cartSidebar">
-  <button id="closeCart" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;color:#666;">✖</button>
+<section class="cart-section" id="cartSection">
   <h2>Your Cart</h2>
   <div id="cartItems"></div>
   <div class="cart-total">Total: <span id="cartTotal">$0.00</span></div>
-  <button id="checkoutBtn">Checkout</button>
-  <button id="continueShopping" style="display:none;">Continue Shopping</button>
-  <form id="checkoutForm" style="display:none;">
-    <input type="text" id="custName" placeholder="Customer Name" required>
-    <input type="email" id="custEmail" placeholder="Customer Email" required>
-    <input type="text" id="custAddr" placeholder="Delivery Address" required>
+  <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+</section>
+
+<section class="checkout-form" id="checkoutForm">
+  <h2>Checkout</h2>
+  <form id="orderForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" required>
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+    <label for="address">Shipping Address:</label>
+    <input type="text" id="address" required>
     <button type="submit">Place Order</button>
   </form>
-  <div id="confirmation"></div>
-</aside>
+</section>
 
-<script type="module">
-  import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+<section class="confirmation" id="confirmation">
+  <h2>Thank You!</h2>
+  <p>Your order has been placed successfully. We'll notify you via email.</p>
+  <button onclick="location.reload()" style="margin-top:1rem;padding:.5rem 1rem;background:var(--primary);color:#fff;border:none;border-radius:4px;cursor:pointer;">Continue Shopping</button>
+</section>
 
-  const SUPABASE_URL = 'https://kofyaexiiibbuqkpwwwz.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+<footer>
+  &copy; <span id="year"></span> PawNutri. All rights reserved.
+</footer>
 
-  // ========== Cart Logic ==========
-  const cart = JSON.parse(localStorage.getItem('pawNutriCart') || '[]');
-  function saveCart() { localStorage.setItem('pawNutriCart', JSON.stringify(cart)); }
-  function updateCartBadge() { document.getElementById('cartBadge').textContent = cart.reduce((sum,item)=>sum+item.qty,0); }
-  function renderCart() {
-    const container = document.getElementById('cartItems');
-    if (!container) return;
-    container.innerHTML = '';
-    if (cart.length===0) {
-      container.innerHTML = '<p>Your cart is empty.</p>';
-      document.getElementById('cartTotal').textContent = '$0.00';
-      document.getElementById('continueShopping').style.display = 'inline-block';
-      document.getElementById('checkoutBtn').style.display = 'none';
-      return;
-    }
-    document.getElementById('continueShopping').style.display = 'none';
-    document.getElementById('checkoutBtn').style.display = 'block';
-    let total = 0;
-    cart.forEach((item, idx)=>{
-      const div = document.createElement('div');
-      div.className = 'cart-item';
-      div.innerHTML = `
-        <div class="cart-item-info">
-          <strong>${item.name}</strong><br>
-          <small>${item.description}</small>
-        </div>
-        <div class="cart-item-controls">
-          <button class="qty-btn" data-idx="${idx}" data-change="-1">−</button>
-          <input type="number" min="1" value="${item.qty}" data-idx="${idx}" class="qty-input">
-          <button class="qty-btn" data-idx="${idx}" data-change="+1">+</button>
-          <span>$${(item.price*item.qty).toFixed(2)}</span>
-          <button class="remove-btn" data-idx="${idx}" style="background:none;border:none;color:#c62828;">✕</button>
-        </div>
-      `;
-      container.appendChild(div);
-      total += item.price * item.qty;
-    });
-    document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const ANON_KEY = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+  const SUPABASE_URL = 'https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1';
+  const PRODUCTS_ENDPOINT = `${SUPABASE_URL}/products`;
+  const ORDERS_ENDPOINT = `${SUPABASE_URL}/orders`;
+  const ORDER_ITEMS_ENDPOINT = `${SUPABASE_URL}/order_items`;
 
-    // qty buttons
-    document.querySelectorAll('.qty-btn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const idx = Number(e.target.dataset.idx);
-        const change = Number(e.target.dataset.change);
-        if (cart[idx].qty + change < 1) return;
-        cart[idx].qty += change;
-        saveCart();
-        renderCart();
-        updateCartBadge();
-      });
-    });
-    document.querySelectorAll('.qty-input').forEach(inp=>{
-      inp.addEventListener('change', e=>{
-        const idx = Number(e.target.dataset.idx);
-        const val = Math.max(1, Number(e.target.value));
-        if (isNaN(val)) return;
-        cart[idx].qty = val;
-        saveCart();
-        renderCart();
-        updateCartBadge();
-      });
-    });
-    document.querySelectorAll('.remove-btn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const idx = Number(e.target.dataset.idx);
-        cart.splice(idx,1);
-        saveCart();
-        renderCart();
-        updateCartBadge();
-      });
-    });
+  // Cart handling
+  let cart = JSON.parse(localStorage.getItem('pawNutriCart')) || [];
+
+  function saveCart() {
+    localStorage.setItem('pawNutriCart', JSON.stringify(cart));
+    renderCart();
   }
-  function addToCart(product){
-    const existing = cart.find(p=>p.id===product.id);
-    if (existing){
-      existing.qty += 1;
-    }else{
-      cart.push({...product, qty:1});
+
+  function addToCart(product) {
+    const existing = cart.find(i => i.id === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({...product, quantity: 1});
     }
     saveCart();
-    renderCart();
-    updateCartBadge();
   }
 
-  // ========== Fetch Products ==========
-  async function fetchProducts(){
-    try{
-      const resp = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`,{
-        headers:{
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+  function removeFromCart(id) {
+    cart = cart.filter(i => i.id !== id);
+    saveCart();
+  }
+
+  function updateQuantity(id, qty) {
+    if (qty <= 0) {
+      removeFromCart(id);
+      return;
+    }
+    const item = cart.find(i => i.id === id);
+    if (item) item.quantity = qty;
+    saveCart();
+  }
+
+  function renderCart() {
+    const countEl = document.getElementById('cartCount');
+    const itemsEl = document.getElementById('cartItems');
+    const totalEl = document.getElementById('cartTotal');
+    const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+    countEl.textContent = count;
+    const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    totalEl.textContent = `$${total.toFixed(2)}`;
+
+    if (cart.length === 0) {
+      itemsEl.innerHTML = '<p>Your cart is empty.</p>';
+      return;
+    }
+    itemsEl.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <div class="cart-item-info">
+          <strong>${item.name}</strong><br>
+          $${item.price.toFixed(2)} × ${item.quantity}
+        </div>
+        <div>
+          <div class="cart-item-quantity">
+            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">−</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+          </div>
+          <button onclick="removeFromCart(${item.id})" style="background:#e53935;color:#fff;border:none;padding:2px 6px;border-radius:3px;font-size:0.8rem;cursor:pointer;">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Product fetching
+  async function loadProducts() {
+    try {
+      const resp = await fetch(PRODUCTS_ENDPOINT, {
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`
         }
       });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      renderProducts(data);
-    }catch(err){
-      console.error(err);
-      document.getElementById('productGrid').innerHTML = '<p>Failed to load products.</p>';
+      const products = await resp.json();
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.image_url || 'https://via.placeholder.com/300x180?text=Dog+Food'}" alt="${p.name}">
+          <div class="card-body">
+            <h3>${p.name}</h3>
+            <p>$${p.price.toFixed(2)}</p>
+            <button onclick="addToCart(${JSON.stringify(p).replace(/"/g, '&quot;)})">Add to Cart</button>
+          </div>
+        `);
+        grid.appendChild(card);
+      });
+    } catch (e) {
+      console.error('Failed to load products:', e);
+      document.getElementById('productGrid').innerHTML = '<p>Error loading products.</p>';
     }
   }
-  function renderProducts(products){
-    const grid = document.getElementById('productGrid');
-    grid.innerHTML = '';
-    products.forEach(p=>{
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <img src="${p.image_url || 'https://via.placeholder.com/400x300?placeholder=Dog+Food'}" alt="${p.name}">
-        <div class="info">
-          <h3>${p.name}</h3>
-          <p>${p.description}</p>
-          <div class="price">$${Number(p.price).toFixed(2)}</div>
-          <button data-id="${p.id}" data-name="${p.name}" data-desc="${p.description}" data-price="${Number(p.price)}">Add to Cart</button>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-    // attach listeners
-    grid.querySelectorAll('button').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const btn = e.target;
-        const product = {
-          id: btn.dataset.id,
-          name: btn.dataset.name,
-          description: btn.dataset.desc,
-          price: parseFloat(btn.dataset.price)
-        };
-        addToCart(product);
-      });
-    });
-  }
 
-  // ========== Three.js Hero ==========
-  function initThree(){
-    const canvas = document.getElementById('threeCanvas');
+  // Checkout
+  document.getElementById('checkoutBtn').addEventListener('click', () => {
+    document.getElementById('checkoutForm').style.display = 'block';
+    document.getElementById('cartSection').style'). Actually, we need to hide cartSection hide cart? We'll just show form. We'll just show form.
+  });
+  document.getElementById('orderForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const address = document.getElementById('address').value.trim();
+    if (!name || !email || !address) {
+      alert('Please fill all fields');
+      return;
+    }
+    try {
+      // Create order
+      const orderResp = await fetch(ORDERS_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          customer_name: name,
+          customer_email: email,
+          shipping_address: address,
+          order_date: new Date().toISOString()
+        })
+      });
+      if (!orderResp.ok) throw new Error(`Order failed: ${orderResp.status}`);
+      const orderData = await orderResp.json();
+      const orderId = orderData[0].id; // supabase returns array
+
+      // Create order items
+      const orderItemsPromises = cart.map(item => 
+        fetch(ORDER_ITEMS_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'apikey': ANON_KEY,
+            'Authorization': `Bearer ${ANON_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.price
+          })
+        })
+      );
+      await Promise.all(orderItemsPromises);
+
+      // Clear cart and show confirmation
+      cart = [];
+      saveCart();
+      document.getElementById('checkoutForm').style.display = 'none';
+      document.getElementById('confirmation').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      alert('Failed to place order. Please try again.');
+    }
+  });
+
+  // Three.js hero
+  function initThree() {
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xfff8f0);
-    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
+    scene.background = new THREE.Color(0xfff8e1);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.6), 0.1, 1000);
     camera.position.set(0, 2, 5);
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('heroCanvas'), antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight * 0.6);
     renderer.setPixelRatio(window.devicePixelRatio);
 
     // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambient);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5,10,7);
+    const dirLight = new THREE.DirectionalLight(0xffab91, 0.8);
+    dirLight.position.set(5, 10, 7);
     scene.add(dirLight);
 
     // Dog food bag (simple box)
-    const bagGeometry = new THREE.BoxGeometry(1.8, 2.8, 0.9);
-    const bagMaterial = new THREE.MeshStandardMaterial({color:0x8b5e3c, roughness:0.4, metalness:0.1});
+    const bagGeometry = new THREE.BoxGeometry(1.5, 2, 0.5);
+    const bagMaterial = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
     const bag = new THREE.Mesh(bagGeometry, bagMaterial);
     bag.position.y = 0;
     scene.add(bag);
 
-    // Kibble particles
-    const kibbleCount = 120;
-    const kibbleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
-    const kibbleMaterial = new THREE.MeshStandardMaterial({color:0xd4a373});
+    // Floating kibble (spheres)
+    const kibbleCount = 20;
     const kibbles = [];
-    for(let i=0;i<kibbleCount;i++){
-      const mesh = new THREE.Mesh(kibbleGeometry, kibbleMaterial);
-      mesh.position.set(
-        (Math.random()-0.5)*2,
-        Math.random()*3 -1,
-        (Math.random()-0.5)*2
+    for (let i = 0; i < kibbleCount; i++) {
+      const geometry = new THREE.SphereGeometry(0.08, 8, 8);
+      const material = new THREE.MeshStandardMaterial({ color: 0xffcc80 });
+      const kibble = new THREE.Mesh(geometry, material);
+      kibble.position.set(
+        (Math.random() - 0.5) * 4,
+        Math.random() * 3,
+        (Math.random() - 0.5) * 2
       );
-      mesh.userData = { dy: 0.002 + Math.random()*0.003, speed: 0.001 + Math.random()*0.002 };
-      scene.add(mesh);
-      kibbles.push(mesh);
+      kibble.userData = { speed: 0.01 + Math.random() * 0.02, offsetY: Math.random() * Math.PI * 2 };
+      scene.add(kibble);
+      kibbles.push(kibble);
     }
 
-    function animate(){
+    function animate() {
       requestAnimationFrame(animate);
-      bag.rotation.y += 0.004;
-      bag.rotation.z += 0.001;
-      kibbles.forEach(k=>{
-        k.position.y += k.userData.dy;
-        k.position.x += Math.sin(Date.now()*0.001 + k.position.x)*k.userData.speed;
-        k.position.z += Math.cos(Date.now()*0.001 + k.position.z)*k.userData.speed;
-        if(k.position.y > 3){
-          k.position.y = -1;
-          k.position.x = (Math.random()-0.5)*2;
-          k.position.z = (Math.random()-0.5)*2;
-        }
+      bag.rotation.y += 0.005;
+      kibbles.forEach(k => {
+        k.position.y = Math.sin(Date.now() * 0.001 + k.userData.offsetY) * 0.2 + (k.userData.offsetY / Math.PI);
+        k.rotation.x += k.userData.speed;
+        k.rotation.y += k.userData.speed * 0.5;
       });
       renderer.render(scene, camera);
     }
     animate();
-    window.addEventListener('resize',()=>{
-      camera.aspect = canvas.clientWidth/canvas.clientHeight;
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / (window.innerHeight * 0.6);
       camera.updateProjectionMatrix();
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      renderer.setSize(window.innerWidth, window.innerHeight * 0.6);
     });
   }
-
-  // ========== Cart Sidebar Toggle ==========
-  document.getElementById('cartToggle').addEventListener('click',()=>{
-    document.getElementById('cartSidebar').classList.toggle('open');
-  });
-  document.getElementById('closeCart').addEventListener('click',()=>{
-    document.getElementById('cartSidebar').classList.remove('open');
-  });
-
-  // ========== Checkout Flow ==========
-  document.getElementById('checkoutBtn').addEventListener('click',()=>{
-    document.getElementById('checkoutForm').style.display = 'flex';
-    document.getElementById('continueShopping').style.display = 'none';
-    document.getElementById('checkoutBtn').style.display = 'none';
-  });
-  document.getElementById('continueShopping').addEventListener('click',()=>{
-    document.getElementById('checkoutForm').style.display = 'none';
-    document.getElementById('continueShopping').style.display = 'none';
-    document.getElementById('checkoutBtn').style.display = 'block';
-  });
-
-  document.getElementById('checkoutForm?. Actually we need to attach submit handler:
-  document.getElementById('checkoutForm').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const name = document.getElementById('custName').value.trim();
-    const email = document.getElementById('custEmail').value.trim();
-    const addr = document.getElementById('custAddr').value.trim').value.trim();
-    if(!name||!email||!addr==='
-    alert('Please fill all fields');
-    return;
-    }
-    const total = cart.reduce((sum,item)=>sum+item.price*item.qty,0);
-    try{
-      // 1. Create order
-      const orderResp = await fetch(`${SUPABASE_URL}/rest/v1/orders`,{
-        method:'POST',
-        headers:{
-          'apikey':SUPABASE_ANON_KEY,
-          'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type':'application/json',
-          'Prefer':'return=representation'
-        },
-        body:JSON.stringify({customer_name:name,customer_email:email,customer_address:addr,total})
-      });
-      if(!orderResp.ok) throw new Error(`Order failed: ${orderResp.status}`);
-      const orderData = await orderResp.json();
-      const orderId = orderData[0].id;
-      // 2. Create order items
-      const items = cart.map(item=>({
-        order_id:orderId,
-        product_id:item.id,
-        quantity:item.qty,
-        price:item.price
-      }));
-      const itemsResp = await fetch(`${SUPABASE_URL}/rest/v1/order_items`,{
-        method:'POST',
-        headers:{
-          'apikey':SUPABASE_ANON_KEY,
-          'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type':'application/json',
-          'Prefer':'return=representation'
-        },
-        body:JSON.stringify(items)
-      });
-      if(!itemsResp.ok) throw new Error(`Order items failed: ${itemsResp.status}`);
-      // Success
-      document.getElementById('confirmation').textContent = `Thank you! Your order #${orderId} has been placed.`;
-      document.getElementById('confirmation').style.display = 'block';
-      // Clear cart
-      cart.length = 0;
-      saveCart();
-      renderCart();
-      updateCartBadge();
-      // Hide form, show continue button
-      setTimeout(()=>{
-        document.getElementById('checkoutForm').style.display = 'none';
-        document.getElementById('continueShopping').style.display = 'inline-block';
-        document.getElementById('confirmation').style.display = 'none';
-      },3000);
-    }catch(err){
-      console.error(err);
-      alert('Checkout failed: '+err.message);
-    }
-  });
-
-  // ========== Init ==========
-  fetchProducts();
   initThree();
+
+  // Load products and render cart
+  loadProducts();
   renderCart();
-  updateCartBadge();
+
+  // Year in footer
+  document.getElementById('year').textContent = new Date().getFullYear();
+});
 </script>
 </body>
 </html>

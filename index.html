@@ -38,12 +38,13 @@
 <body>
 <div class="container">
   <h1>LLM Model Comparison</h1>
-  <div class="subtitle">7 language models build the same 3D dog food landing page + full ecommerce store — see the results side by side</div>
+  <div class="subtitle">Cloud models build 3D landing pages + full ecommerce stores — verified one at a time</div>
 
-  <div class="section-title">🧪 Experiment 1: 3D Landing Page (Frontend)</div>
+  <div class="section-title">Experiment 1: 3D Landing Page (Frontend)</div>
 
   <div class="card">
-    <div class="model-name">Nemotron 3 Super (Cloud) ★</div>
+    <div class="badge badge-frontend">Best: 10/10</div>
+    <div class="model-name">Nemotron 3 Super (Cloud)</div>
     <div class="provider">NVIDIA · Ollama Cloud</div>
     <div class="links">
       <a href="experiments/frontend/nemotron-3-super_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">9/10</span></a>
@@ -52,7 +53,8 @@
   </div>
 
   <div class="card">
-    <div class="model-name">Gemma 4 (Cloud) ★</div>
+    <div class="badge badge-frontend">Best: 10/10</div>
+    <div class="model-name">Gemma 4 (Cloud)</div>
     <div class="provider">Google DeepMind · Ollama Cloud</div>
     <div class="links">
       <a href="experiments/frontend/gemma4_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">9/10</span></a>
@@ -61,105 +63,58 @@
   </div>
 
   <div class="card">
-    <div class="model-name">Qwen2.5-Coder 14B (Local)</div>
-    <div class="provider">Alibaba · Ollama Local</div>
-    <div class="links">
-      <a href="experiments/frontend/qwen2.5-coder_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">8/10</span></a>
-      <a href="experiments/frontend/qwen2.5-coder_technical/" class="link-tech">Technical Prompt <span class="score score-good">10/10</span></a>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="model-name">Qwen2.5-Coder 7B (Local)</div>
-    <div class="provider">Alibaba · Ollama Local</div>
-    <div class="links">
-      <a href="experiments/frontend/qwen2.5-coder_7b_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">8/10</span></a>
-    </div>
-  </div>
-
-  <div class="card">
+    <div class="badge badge-frontend">Best: 8/10</div>
     <div class="model-name">MiniMax M3 (Cloud)</div>
     <div class="provider">MiniMax · Ollama Cloud</div>
     <div class="links">
-      <a href="experiments/frontend/minimax-m3_vibe/" class="link-vibe">Vibe Prompt <span class="score score-ok">7/10</span></a>
+      <a href="experiments/frontend/minimax-m3_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">8/10</span></a>
+      <a href="experiments/frontend/minimax-m3_technical/" class="link-tech">Technical Prompt <span class="score score-bad">0/10</span></a>
     </div>
   </div>
 
-  <div class="card" style="opacity:0.6;">
-    <div class="model-name">Kimi K2.7 Code (Cloud)</div>
-    <div class="provider">Moonshot AI · Ollama Cloud</div>
-    <div class="links"><span style="color:#f87171;font-size:0.9rem;">✗ 403 auth error</span></div>
-  </div>
-
-  <div class="card" style="opacity:0.6;">
-    <div class="model-name">GLM 5.2 (Cloud)</div>
-    <div class="provider">Z.ai · Ollama Cloud</div>
-    <div class="links"><span style="color:#f87171;font-size:0.9rem;">✗ 403 auth error</span></div>
-  </div>
-
-  <div class="section-title">🛒 Experiment 2: Ecommerce Store (Loop Engineering)</div>
+  <div class="section-title">Experiment 2: Ecommerce Store (Loop Engineering)</div>
 
   <div class="card">
-    <div class="badge badge-ecommerce">Best: 8.6/10</div>
+    <div class="badge badge-ecommerce">Perfect 10/10</div>
     <div class="model-name">Nemotron 3 Super (Cloud)</div>
-    <div class="provider">NVIDIA · Ollama Cloud · 2 iterations</div>
+    <div class="provider">NVIDIA · Ollama Cloud · 2 iterations (9.3 → 10.0)</div>
     <div class="links">
-      <a href="experiments/ecommerce/nemotron-3-super/iter1/" class="link-eco">Iteration 1 <span class="score score-good">8.6</span></a>
-      <a href="experiments/ecommerce/nemotron-3-super/iter2/" class="link-eco">Iteration 2 <span class="score score-good">8.6</span></a>
+      <a href="experiments/ecommerce/nemotron-3-super/iter1/" class="link-eco">Iteration 1 <span class="score score-good">9.3</span></a>
+      <a href="experiments/ecommerce/nemotron-3-super/iter2/" class="link-eco">Iteration 2 <span class="score score-good">10.0</span></a>
     </div>
   </div>
 
   <div class="card">
-    <div class="badge badge-ecommerce">Best: 8.6/10</div>
+    <div class="badge badge-ecommerce">Perfect 10/10</div>
     <div class="model-name">Gemma 4 (Cloud)</div>
-    <div class="provider">Google DeepMind · Ollama Cloud · 3 iterations</div>
+    <div class="provider">Google DeepMind · Ollama Cloud · 1 iteration</div>
     <div class="links">
-      <a href="experiments/ecommerce/gemma4/iter1/" class="link-eco">Iteration 1 <span class="score score-good">8.6</span></a>
-      <a href="experiments/ecommerce/gemma4/iter2/" class="link-eco">Iteration 2 <span class="score score-good">8.6</span></a>
-      <a href="experiments/ecommerce/gemma4/iter3/" class="link-eco">Iteration 3 <span class="score score-good">8.6</span></a>
+      <a href="experiments/ecommerce/gemma4/iter1/" class="link-eco">Iteration 1 <span class="score score-good">10.0</span></a>
     </div>
   </div>
 
   <div class="card">
-    <div class="badge badge-ecommerce">Best: 8.6/10</div>
-    <div class="model-name">Qwen2.5-Coder 7B (Local)</div>
-    <div class="provider">Alibaba · Ollama Local · 3 iterations</div>
-    <div class="links">
-      <a href="experiments/ecommerce/qwen2.5-coder/iter1/" class="link-eco">Iteration 1 <span class="score score-good">8.6</span></a>
-      <a href="experiments/ecommerce/qwen2.5-coder/iter2/" class="link-eco">Iteration 2 <span class="score score-ok">5.7</span></a>
-      <a href="experiments/ecommerce/qwen2.5-coder/iter3/" class="link-eco">Iteration 3 <span class="score score-good">8.6</span></a>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="badge badge-ecommerce">Best: 8.6/10</div>
-    <div class="model-name">Qwen2.5-Coder 14B (Local)</div>
-    <div class="provider">Alibaba · Ollama Local · 2 iterations</div>
-    <div class="links">
-      <a href="experiments/ecommerce/qwen2.5-coder-14b/iter1/" class="link-eco">Iteration 1 <span class="score score-good">7.9</span></a>
-      <a href="experiments/ecommerce/qwen2.5-coder-14b/iter2/" class="link-eco">Iteration 2 <span class="score score-good">8.6</span></a>
-    </div>
-  </div>
-
-  <div class="card" style="opacity:0.6;">
-    <div class="badge badge-ecommerce" style="background:#3a1a1a;color:#f87171;">0/10</div>
+    <div class="badge badge-ecommerce">Perfect 10/10</div>
     <div class="model-name">MiniMax M3 (Cloud)</div>
-    <div class="provider">MiniMax · Ollama Cloud · Failed — no valid HTML</div>
-    <div class="links"><span style="color:#f87171;font-size:0.9rem;">✗ Could not produce valid ecommerce HTML across 3 attempts</span></div>
+    <div class="provider">MiniMax · Ollama Cloud · 1 iteration</div>
+    <div class="links">
+      <a href="experiments/ecommerce/minimax-m3/iter1/" class="link-eco">Iteration 1 <span class="score score-good">10.0</span></a>
+    </div>
   </div>
 
-  <div class="section-title">📄 Research</div>
+  <div class="section-title">Research</div>
 
   <div class="card" style="border-color:#2a4a2a;">
-    <div class="model-name">📄 Research Paper</div>
-    <div class="provider">Full analysis, methodology, and charts</div>
+    <div class="model-name">Research Paper</div>
+    <div class="provider">Full analysis, methodology, exact prompts, and verified results</div>
     <div class="links">
-      <a href="paper/LLM_Loop_Engineering_Research_Paper.docx" class="link-paper">Download DOCX (Updated)</a>
+      <a href="paper/LLM_Verified_Research_Paper.docx" class="link-paper">Download DOCX</a>
     </div>
   </div>
 
   <div class="footer">
     Built with Ollama Cloud · July 2026<br>
+    Models run one at a time, results verified manually<br>
     <a href="https://github.com/piyushomanwar16/dogfood-experiment" style="color:#667eea;">GitHub Repo</a>
   </div>
 </div>

@@ -6,11 +6,11 @@
     <title>Premium Dog Food | 3D Experience</title>
     <style>
         :root {
-            --gold: #DAA520;
-            --brown: #8B4513;
+            --primary-gold: #DAA520;
+            --deep-brown: #8B4513;
             --dark-brown: #2C1810;
-            --green: #2E8B57;
-            --white: #ffffff;
+            --accent-green: #2E8B57;
+            --bg-gradient: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
         }
 
         body, html {
@@ -20,6 +20,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
         }
 
         canvas {
@@ -47,53 +48,60 @@
 
         .content-box {
             max-width: 600px;
-            pointer-events: auto;
+            transform: translateY(-50px);
+            animation: fadeInUp 1.2s ease-out forwards;
         }
 
         h1 {
             font-family: 'Georgia', serif;
-            font-size: 2.5rem;
+            font-size: 3.5rem;
             font-weight: bold;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 4px 6px rgba(0,0,0,0.1);
+            letter-spacing: -1px;
+            line-height: 1.1;
         }
 
         p {
             font-size: 1.2rem;
             font-weight: 300;
-            margin-bottom: 2rem;
-            color: #5d3a2a;
+            margin-bottom: 30px;
+            opacity: 0.8;
         }
 
         .cta-button {
-            padding: 15px 40px;
+            pointer-events: auto;
+            cursor: pointer;
+            padding: 16px 40px;
             font-size: 1.1rem;
             font-weight: bold;
-            color: white;
             text-transform: uppercase;
+            color: white;
             border: none;
             border-radius: 50px;
-            cursor: pointer;
-            background: linear-gradient(45deg, var(--gold), var(--brown));
-            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4);
-            transition: all 0.3s ease;
+            background: linear-gradient(45deg, var(--primary-gold), var(--deep-brown));
+            box-shadow: 0 10px 20px rgba(139, 69, 19, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             outline: none;
         }
 
         .cta-button:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(218, 165, 32, 0.6);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 15px 30px rgba(218, 165, 32, 0.5);
             filter: brightness(1.1);
         }
 
         .cta-button:active {
-            transform: translateY(0);
+            transform: scale(0.95);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(-50px); }
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 1.8rem; }
+            h1 { font-size: 2.2rem; }
             p { font-size: 1rem; }
         }
     </style>
@@ -102,7 +110,7 @@
 
     <div id="ui-overlay">
         <div class="content-box">
-            <h1>Premium Dog Food</h1>
+            <h1>PREMIUM DOG FOOD</h1>
             <p>Crafted with love. Backed by science.</p>
             <button class="cta-button">Shop Now</button>
         </div>
@@ -114,159 +122,163 @@
 
         // --- Configuration ---
         const CONFIG = {
-            bagSize: { w: 1.5, h: 2.2, d: 0.8 },
-            colors: { brown: '#8B4513', gold: '#DAA520', green: '#2E8B57', ground: '#3e7a3e', sky: '#87CEEB' },
+            colors: {
+                brown: 0x8B4513,
+                gold: 0xDAA520,
+                green: 0x2E8B57,
+                sky: 0x87CEEB,
+                ground: 0x3e7a3e
+            },
             kibbleCount: 60
         };
 
-        // --- Scene Setup ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf5f5f5);
+        // --- State ---
+        let scene, camera, renderer, controls, clock;
+        let bag, kibbles = [];
+        let instancedKibble;
 
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 2, 8);
+        init();
+        animate();
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        document.body.appendChild(renderer.domElement);
+        function init() {
+            // Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xfdfcfb);
+            clock = new THREE.Clock();
 
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.enablePan = false;
-        controls.minDistance = 4;
-        controls.maxDistance = 15;
+            // Camera
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 8);
 
-        // --- Lighting ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            document.body.appendChild(renderer.domElement);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        dirLight.position.set(5, 10, 7);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.set(2048, 2048);
-        dirLight.shadow.camera.left = -5;
-        dirLight.shadow.camera.right = 5;
-        dirLight.shadow.camera.top = 5;
-        dirLight.shadow.camera.bottom = -5;
-        scene.add(dirLight);
+            // Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.enablePan = false;
+            controls.maxPolarAngle = Math.PI / 2.1; // Prevent going under floor
 
-        const hemiLight = new THREE.HemisphereLight(CONFIG.colors.sky, CONFIG.colors.ground, 0.6);
-        scene.add(hemiLight);
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
 
-        // --- Texture Generation ---
-        function createBagTexture() {
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            dirLight.position.set(5, 10, 7);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.near = 0.1;
+            dirLight.shadow.camera.far = 20;
+            scene.add(dirLight);
+
+            const hemiLight = new THREE.HemisphereLight(CONFIG.colors.sky, CONFIG.colors.ground, 0.6);
+            scene.add(hemiLight);
+
+            // Ground Plane
+            const groundGeo = new THREE.CircleGeometry(4, 32);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0xe2d1c3, roughness: 0.8 });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Dog Food Bag
+            createDogFoodBag();
+
+            // Kibbles (Instanced for performance)
+            createKibbles();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createDogFoodBag() {
+            // Create Texture via Canvas
             const canvas = document.createElement('canvas');
             canvas.width = 512;
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
 
             // Background
-            ctx.fillStyle = CONFIG.colors.brown;
+            ctx.fillStyle = '#8B4513';
             ctx.fillRect(0, 0, 512, 512);
 
-            // Gold Accent Band
-            ctx.fillStyle = CONFIG.colors.gold;
-            ctx.fillRect(0, 100, 512, 60);
-            ctx.fillRect(0, 350, 512, 60);
+            // Gold Stripe
+            ctx.fillStyle = '#DAA520';
+            ctx.fillRect(0, 150, 512, 100);
 
-            // Green Label
-            ctx.fillStyle = CONFIG.colors.green;
-            ctx.beginPath();
-            ctx.arc(256, 256, 120, 0, Math.PI * 2);
-            ctx.fill();
+            // Green Bottom
+            ctx.fillStyle = '#2E8B57';
+            ctx.fillRect(0, 400, 512, 112);
 
             // Text
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 40px serif';
+            ctx.font = 'bold 40px Georgia';
             ctx.textAlign = 'center';
-            ctx.fillText('PREMIUM', 256, 240);
-            ctx.fillText('DOG FOOD', 256, 280);
+            ctx.fillText('PREMIUM', 256, 210);
+            ctx.font = 'bold 30px Georgia';
+            ctx.fillText('DOG FOOD', 256, 250);
+            
+            ctx.font = '20px Arial';
+            ctx.fillText('100% NATURAL INGREDIENTS', 256, 440);
 
             const texture = new THREE.CanvasTexture(canvas);
-            return texture;
-        }
-
-        // --- 3D Objects ---
-        
-        // Ground Plane
-        const groundGeo = new THREE.CircleGeometry(4, 32);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.8 });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // Dog Food Bag
-        const bagGeo = new THREE.BoxGeometry(CONFIG.bagSize.w, CONFIG.bagSize.h, CONFIG.bagSize.d);
-        const bagMat = new THREE.MeshStandardMaterial({ 
-            map: createBagTexture(),
-            roughness: 0.4,
-            metalness: 0.1
-        });
-        const bag = new THREE.Mesh(bagGeo, bagMat);
-        bag.position.y = CONFIG.bagSize.h / 2;
-        bag.castShadow = true;
-        scene.add(bag);
-
-        // Kibble (InstancedMesh for performance)
-        const kibbleGeo = new THREE.TorusGeometry(0.05, 0.03, 8, 16);
-        const kibbleMat = new THREE.MeshStandardMaterial({ color: 0xcc8e35, roughness: 0.7 });
-        const kibbleMesh = new THREE.InstancedMesh(kibbleGeo, kibbleMat, CONFIG.kibbleCount);
-        kibbleMesh.castShadow = true;
-        scene.add(kibbleMesh);
-
-        const kibbleData = [];
-        const dummy = new THREE.Object3D();
-
-        for (let i = 0; i < CONFIG.kibbleCount; i++) {
-            const radius = 2 + Math.random() * 1.5;
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 0.1 + Math.random() * 0.2;
-            const yOffset = Math.random() * 0.5;
             
-            kibbleData.push({ radius, angle, speed, yOffset });
+            // Box Geometry (Simulating rounded bag)
+            const geometry = new THREE.BoxGeometry(1.5, 2.2, 0.8);
+            const material = new THREE.MeshStandardMaterial({ 
+                map: texture,
+                roughness: 0.6,
+                metalness: 0.1
+            });
+
+            bag = new THREE.Mesh(geometry, material);
+            bag.position.y = 1.1;
+            bag.castShadow = true;
+            scene.add(bag);
         }
 
-        // --- Animation Loop ---
-        const clock = new THREE.Clock();
+        function createKibbles() {
+            const geometry = new THREE.TorusGeometry(0.05, 0.03, 8, 16);
+            const material = new THREE.MeshStandardMaterial({ color: 0x633911, roughness: 0.4 });
+            
+            instancedKibble = new THREE.InstancedMesh(geometry, material, CONFIG.kibbleCount);
+            instancedKibble.castShadow = true;
+            
+            // Random data for each instance
+            const dummy = new THREE.Object3D();
+            const kibbleData = [];
 
-        function animate() {
-            const delta = clock.getDelta();
-            const elapsed = clock.getElapsedTime();
-
-            requestAnimationFrame(animate);
-
-            // Bag Animation
-            bag.rotation.y += 0.3 * delta; // 0.3 rad/s
-            bag.position.y = (CONFIG.bagSize.h / 2) + Math.sin(elapsed * 0.5) * 0.05;
-
-            // Kibble Animation
             for (let i = 0; i < CONFIG.kibbleCount; i++) {
-                const data = kibbleData[i];
-                data.angle += data.speed * delta;
-
-                const x = Math.cos(data.angle) * data.radius;
-                const z = Math.sin(data.angle) * data.radius;
-                const y = 0.2 + Math.sin(elapsed + i) * 0.1 + data.yOffset;
-
-                dummy.position.set(x, y, z);
-                dummy.rotation.set(Math.random(), Math.random(), Math.random());
+                const radius = 2 + Math.random() * 1.5;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.1 + Math.random() * 0.2;
+                const yOffset = Math.random() * 0.5;
+                
+                kibbleData.push({ radius, angle, speed, yOffset });
+                
+                dummy.position.set(
+                    Math.cos(angle) * radius,
+                    yOffset,
+                    Math.sin(angle) * radius
+                );
+                dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
                 dummy.updateMatrix();
-                kibbleMesh.setMatrixAt(i, dummy.matrix);
+                instancedKibble.setMatrixAt(i, dummy.matrix);
             }
-            kibbleMesh.instanceMatrix.needsUpdate = true;
-
-            controls.update();
-            renderer.render(scene, camera);
+            
+            scene.add(instancedKibble);
+            kibbles = kibbleData;
         }
 
-        // --- Responsive Handling ---
-        function handleResize() {
+        function onWindowResize() {
             const width = window.innerWidth;
             const height = window.innerHeight;
 
@@ -277,16 +289,43 @@
                 camera.fov = 45;
                 camera.position.set(0, 2, 8);
             }
-            
-            camera.aspect = width / height;
+
             camera.updateProjectionMatrix();
             renderer.setSize(width, height);
         }
 
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Initial call
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
 
-        animate();
+            // Bag Animation
+            if (bag) {
+                bag.rotation.y += 0.3 * delta;
+                bag.position.y = 1.1 + Math.sin(elapsed * 0.5) * 0.05;
+            }
+
+            // Kibble Animation (Updating Instanced Mesh)
+            if (instancedKibble) {
+                const dummy = new THREE.Object3D();
+                kibbles.forEach((data, i) => {
+                    data.angle += data.speed * delta;
+                    
+                    dummy.position.set(
+                        Math.cos(data.angle) * data.radius,
+                        data.yOffset + Math.sin(elapsed * 2 + i) * 0.1,
+                        Math.sin(data.angle) * data.radius
+                    );
+                    dummy.rotation.set(elapsed * data.speed, elapsed, 0);
+                    dummy.updateMatrix();
+                    instancedKibble.setMatrixAt(i, dummy.matrix);
+                });
+                instancedKibble.instanceMatrix.needsUpdate = true;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawNutri - Premium Dog Food</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Georgia', serif; background: #FAF0E6; color: #3E2A1F; overflow-x: hidden; }
+header { position: fixed; top: 0; width: 100%; background: rgba(93, 47, 10, 0.95); backdrop-filter: blur(10px); z-index: 1000; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+.logo { font-size: 1.8rem; font-weight: bold; color: #D4A574; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+.logo span { color: #FAF0E6; }
+.cart-btn { background: #D4A574; color: #3E2A1F; border: none; padding: 0.7rem 1.5rem; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 1rem; position: relative; transition: all 0.3s; }
+.cart-btn:hover { background: #C9A96E; transform: scale(1.05); }
+.cart-count { position: absolute; top: -8px; right: -8px; background: #8B4513; color: #FAF0E6; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+#hero { height: 100vh; position: relative; background: linear-gradient(135deg, #5D2F0A 0%, #8B4513 50%, #A0522D 100%); }
+#hero-canvas { width: 100%; height: 100%; display: block; }
+.hero-content { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); color: #FAF0E6; z-index: 10; max-width: 500px; }
+.hero-content h1 { font-size: 4rem; margin-bottom: 1rem; text-shadow: 3px 3px 8px rgba(0,0,0,0.5); line-height: 1.1; }
+.hero-content p { font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.95; }
+.hero-btn { background: #D4A574; color: #3E2A1F; padding: 1rem 2.5rem; border: none; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+.hero-btn:hover { background: #FAF0E6; transform: translateY(-3px); }
+section { padding: 4rem 2rem; max-width: 1400px; margin: 0 auto; }
+.section-title { text-align: center; font-size: 2.5rem; color: #5D2F0A; margin-bottom: 1rem; }
+.section-subtitle { text-align: center; color: #8B4513; margin-bottom: 3rem; font-size: 1.1rem; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+.product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(93, 47, 10, 0.15); transition: all 0.3s; }
+.product-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(93, 47, 10, 0.25); }
+.product-image { height: 220px; background: linear-gradient(135deg, #D4A574, #8B4513); display: flex; align-items: center; justify-content: center; font-size: 5rem; }
+.product-info { padding: 1.5rem; }
+.product-name { font-size: 1.3rem; color: #5D2F0A; margin-bottom: 0.5rem; }
+.product-desc { color: #8B4513; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.4; }
+.product-price { font-size: 1.5rem; font-weight: bold; color: #A0522D; margin-bottom: 1rem; }
+.add-btn { background: #8B4513; color: #FAF0E6; border: none; padding: 0.7rem 1.5rem; border-radius: 25px; cursor: pointer; width: 100%; font-weight: bold; transition: all 0.3s; }
+.add-btn:hover { background: #5D2F0A; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; padding: 1rem; }
+.modal.active { display: flex; }
+.modal-content { background: #FAF0E6; border-radius: 20px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 2rem; position: relative; }
+.modal-content.large { max-width: 800px; }
+.close-btn { position: absolute; top: 1rem; right: 1.5rem; background: none; border: none; font-size: 2rem; cursor: pointer; color: #5D2F0A; }
+.modal-title { color: #5D2F0A; font-size: 2rem; margin-bottom: 1.5rem; text-align: center; }
+.cart-item { display: flex; gap: 1rem; padding: 1rem; background: white; border-radius: 10px; margin-bottom: 1rem; align-items: center; }
+.cart-item-icon { font-size: 2.5rem; }
+.cart-item-info { flex: 1; }
+.cart-item-name { font-weight: bold; color: #5D2F0A; }
+.cart-item-price { color: #8B4513; font-size: 0.9rem; }
+.qty-controls { display: flex; align-items: center; gap: 0.5rem; }
+.qty-btn { background: #D4A574; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; color: #3E2A1F; }
+.qty-num { min-width: 30px; text-align: center; font-weight: bold; }
+.remove-btn { background: #c0392b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+.cart-total { background: #5D2F0A; color: #FAF0E6; padding: 1.5rem; border-radius: 10px; margin-top: 1rem; text-align: center; font-size: 1.3rem; }
+.checkout-btn { background: #D4A574; color: #3E2A1F; border: none; padding: 1rem 2rem; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 1rem; }
+.checkout-btn:hover { background: #C9A96E; }
+.empty-cart { text-align: center; padding: 2rem; color: #8B4513; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; color: #5D2F0A; margin-bottom: 0.5rem; font-weight: bold; }
+.form-group input, .form-group textarea { width: 100%; padding: 0.8rem; border: 2px solid #D4A574; border-radius: 10px; font-size: 1rem; font-family: inherit; background: white; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: #8B4513; }
+.submit-btn { background: #8B4513; color: #FAF0E6; border: none; padding: 1rem 2rem; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 1rem; }
+.submit-btn:hover { background: #5D2F0A; }
+.submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+.confirmation { text-align: center; padding: 2rem; }
+.confirmation-icon { font-size: 5rem; margin-bottom: 1rem; }
+.confirmation h2 { color: #5D2F0A; margin-bottom: 1rem; }
+.confirmation p { color: #8B4513; margin-bottom: 0.5rem; }
+.order-summary { background: white; padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0; text-align: left; }
+.loader { text-align: center; padding: 2rem; color: #8B4513; }
+@media (max-width: 768px) {
+.hero-content h1 { font-size: 2.5rem; }
+.hero-content { left: 5%; right: 5%; }
+header { padding: 0.8rem 1rem; }
+.logo { font-size: 1.3rem; }
+.section-title { font-size: 1.8rem; }
+}
+footer { background: #5D2F0A; color: #FAF0E6; text-align: center; padding: 2rem; margin-top: 4rem; }
+</style>
+</head>
+<body>
+<header>
+<div class="logo">🐾 Paw<span>Nutri</span></div>
+<button class="cart-btn" onclick="openCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+</header>
+<section id="hero">
+<canvas id="hero-canvas"></canvas>
+<div class="hero-content">
+<h1>Premium Nutrition for Your Best Friend</h1>
+<p>Crafted with love, packed with flavor. Give your dog the nutrition they deserve with PawNutri's wholesome recipes.</p>
+<button class="hero-btn" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now</button>
+</div>
+</section>
+<section id="products">
+<h2 class="section-title">Our Premium Products</h2>
+<p class="section-subtitle">Tail-wagging goodness in every bowl</p>
+<div id="products-container" class="products-grid">
+<div class="loader">Loading delicious products...</div>
+</div>
+</section>
+<footer>
+<p>© 2024 PawNutri. Made with ❤️ for dogs everywhere.</p>
+</footer>
+<div class="modal" id="cart-modal">
+<div class="modal-content">
+<button class="close-btn" onclick="closeCart()">×</button>
+<h2 class="modal-title">🛒 Your Cart</h2>
+<div id="cart-items"></div>
+<div id="cart-footer"></div>
+</div>
+</div>
+<div class="modal" id="checkout-modal">
+<div class="modal-content">
+<button class="close-btn" onclick="closeCheckout()">×</button>
+<h2 class="modal-title">📦 Checkout</h2>
+<form id="checkout-form" onsubmit="submitOrder(event)">
+<div class="form-group">
+<label>Full Name *</label>
+<input type="text" id="customer_name" required>
+</div>
+<div class="form-group">
+<label>Email Address *</label>
+<input type="email" id="customer_email" required>
+</div>
+<div class="form-group">
+<label>Shipping Address *</label>
+<textarea id="customer_address" rows="3" required></textarea>
+</div>
+<div id="order-summary"></div>
+<button type="submit" class="submit-btn" id="submit-order-btn">Place Order</button>
+</form>
+</div>
+</div>
+<div class="modal" id="confirmation-modal">
+<div class="modal-content">
+<div class="confirmation">
+<div class="confirmation-icon">🎉</div>
+<h2>Order Confirmed!</h2>
+<p>Thank you for shopping with PawNutri</p>
+<div class="order-summary" id="confirmation-details"></div>
+<p>We'll send a confirmation to your email shortly.</p>
+<button class="checkout-btn" onclick="closeConfirmation()">Continue Shopping</button>
+</div>
+</div>
+</div>
+<script>
+// Supabase configuration
+const SUPABASE_URL = 'https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1';
+const SUPABASE_KEY = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+const headers = {
+'apikey': SUPABASE_KEY,
+'Authorization': 'Bearer ' + SUPABASE_KEY,
+'Content-Type': 'application/json'
+};
+
+// Three.js Hero Scene
+(function initThree() {
+const canvas = document.getElementById('hero-canvas');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// Warm lighting
+const ambientLight = new THREE.AmbientLight(0xFFD4A5, 0.5);
+scene.add(ambientLight);
+const spotLight = new THREE.SpotLight(0xFFE4B5, 1.5);
+spotLight.position.set(5, 8, 5);
+spotLight.castShadow = true;
+scene.add(spotLight);
+const pointLight = new THREE.PointLight(0xD4A574, 1, 20);
+pointLight.position.set(-3, 2, 4);
+scene.add(pointLight);
+const backLight = new THREE.PointLight(0xFFD700, 0.6, 15);
+backLight.position.set(0, 3, -5);
+scene.add(backLight);
+
+// Create dog food bag group
+const bagGroup = new THREE.Group();
+
+// Bag body
+const bagGeometry = new THREE.BoxGeometry(2.2, 3, 1.2, 4, 4, 4);
+// Deform vertices to make it look like a bag
+const positions = bagGeometry.attributes.position;
+for (let i = 0; i < positions.count; i++) {
+const x = positions.getX(i);
+const y = positions.getY(i);
+const z = positions.getZ(i);
+if (y > 1) {
+positions.setX(i, x * 0.3);
+positions.setZ(i, z * 0.7);
+} else if (y < -1) {
+positions.setX(i, x * 1.05);
+positions.setZ(i, z * 0.95);
+}
+}
+bagGeometry.computeVertexNormals();
+const bagMaterial = new THREE.MeshStandardMaterial({
+color: 0x8B4513,
+roughness: 0.7,
+metalness: 0.1
+});
+const bag = new THREE.Mesh(bagGeometry, bagMaterial);
+bag.castShadow = true;
+bag.receiveShadow = true;
+bagGroup.add(bag);
+
+// Bag label (front)
+const labelGeometry = new THREE.PlaneGeometry(1.8, 1.5);
+const labelCanvas = document.createElement('canvas');
+labelCanvas.width = 512;
+labelCanvas.height = 256;
+const ctx = labelCanvas.getContext('2d');
+ctx.fillStyle = '#FAF0E6';
+ctx.fillRect(0, 0, 512, 256);
+ctx.fillStyle = '#5D2F0A';
+ctx.font = 'bold 60px Georgia';
+ctx.textAlign = 'center';
+ctx.fillText('PawNutri', 256, 100);
+ctx.font = '30px Georgia';
+ctx.fillStyle = '#8B4513';
+ctx.fillText('PREMIUM DOG FOOD', 256, 150);
+ctx.fillStyle = '#D4A574';
+ctx.fillRect(180, 170, 150, 30);
+ctx.fillStyle = '#5D2F0A';
+ctx.font = 'bold 24px Georgia';
+ctx.fillText('🐾 ADULT 🐾', 256, 195);
+const labelTexture = new THREE.CanvasTexture(labelCanvas);
+const labelMaterial = new THREE.MeshStandardMaterial({ map: labelTexture, roughness: 0.5 });
+const label = new THREE.Mesh(labelGeometry, labelMaterial);
+label.position.set(0, 0, 0.61);
+bagGroup.add(label);
+
+// Top crimp of bag
+const crimpGeometry = new THREE.CylinderGeometry(0.2, 0.4, 0.4, 8);
+const crimpMaterial = new THREE.MeshStandardMaterial({ color: 0x5D2F0A, roughness: 0.8 });
+const crimp = new THREE.Mesh(crimpGeometry, crimpMaterial);
+crimp.position.set(0, 1.7, 0);
+bagGroup.add(crimp);
+
+bagGroup.position.set(2, 0, 0);
+scene.add(bagGroup);
+
+// Floating kibble
+const kibbleGroup = new THREE.Group();
+const kibbleMaterial = new THREE.MeshStandardMaterial({
+color: 0xA0522D,
+roughness: 0.4,
+metalness: 0.2
+});
+const kibblePieces = [];
+for (let i = 0; i < 40; i++) {
+const kibbleGeo = new THREE.SphereGeometry(0.08, 8, 8);
+const kibble = new THREE.Mesh(kibbleGeo, kibbleMaterial);
+kibble.position.set(
+(Math.random() - 0.5) * 8,
+(Math.random() - 0.5) * 5,
+(Math.random() - 0.5) * 4
+);
+kibble.userData = {
+speed: 0.5 + Math.random() * 1.5,
+offset: Math.random() * Math.PI * 2,
+radius: 0.3 + Math.random() * 0.4,
+baseY: kibble.position.y
+};
+kibbleGroup.add(kibble);
+kibblePieces.push(kibble);
+}
+scene.add(kibbleGroup);
+
+// Floor/platform
+const floorGeometry = new THREE.PlaneGeometry(20, 20);
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x3E2A1F, roughness: 0.9 });
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -2.5;
+floor.receiveShadow = true;
+scene.add(floor);
+
+camera.position.set(0, 0.5, 7);
+camera.lookAt(0, 0, 0);
+
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', (e) => {
+mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+});
+
+function animate() {
+requestAnimationFrame(animate);
+const time = Date.now() * 0.001;
+bagGroup.rotation.y = time * 0.3 + mouseX * 0.3;
+bagGroup.rotation.x = Math.sin(time * 0.5) * 0.1 - mouseY * 0.1;
+bagGroup.position.y = Math.sin(time) * 0.2;
+
+kibblePieces.forEach((k, i) => {
+const d = k.userData;
+k.position.y = d.baseY + Math.sin(time * d.speed + d.offset) * 0.5;
+k.position.x += Math.cos(time * d.speed + d.offset) * 0.005;
+k.rotation.x += 0.01;
+k.rotation.y += 0.015;
+if (k.position.x > 5) k.position.x = -5;
+if (k.position.x < -5) k.position.x = 5;
+});
+
+renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+});
+})();
+
+// Cart Management
+let cart = JSON.parse(localStorage.getItem('pawnutri_cart') || '[]');
+
+function saveCart() {
+localStorage.setItem('pawnutri_cart', JSON.stringify(cart));
+updateCartCount();
+}
+
+function updateCartCount() {
+const count = cart.reduce((sum, item) => sum + item.qty, 0);
+document.getElementById('cart-count').textContent = count;
+}
+
+function addToCart(product) {
+const existing = cart.find(item => item.id === product.id);
+if (existing) {
+existing.qty += 1;
+} else {
+cart.push({ ...product, qty: 1 });
+}
+saveCart();
+showNotification(`Added ${product.name} to cart!`);
+}
+
+function removeFromCart(id) {
+cart = cart.filter(item => item.id !== id);
+saveCart();
+renderCart();
+}
+
+function updateQty(id, delta) {
+const item = cart.find(i => i.id === id);
+if (item) {
+item.qty += delta;
+if (item.qty <= 0) {
+removeFromCart(id);
+return;
+}
+saveCart();
+renderCart();
+}
+}
+
+function getTotal() {
+return cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+}
+
+function showNotification(msg) {
+const n = document.createElement('div');
+n.style.cssText = 'position:fixed;top:80px;right:20px;background:#8B4513;color:#FAF0E6;padding:1rem 1.5rem;border-radius:10px;z-index:3000;box-shadow:0 4px 15px rgba(0,0,0,0.3);animation:slideIn 0.3s';
+n.textContent = msg;
+document.body.appendChild(n);
+setTimeout(() => n.remove(), 2500);
+}
+
+function openCart() {
+document.getElementById('cart-modal').classList.add('active');
+renderCart();
+}
+
+function closeCart() {
+document.getElementById('cart-modal').classList.remove('active');
+}
+
+function renderCart() {
+const container = document.getElementById('cart-items');
+const footer = document.getElementById('cart-footer');
+if (cart.length === 0) {
+container.innerHTML = '<div class="empty-cart">🛒 Your cart is empty<br><br>Add some delicious food for your pup!</div>';
+footer.innerHTML = '';
+return;
+}
+container.innerHTML = cart.map(item => `
+<div class="cart-item">
+<div class="cart-item-icon">${item.emoji || '🐕'}</div>
+<div class="cart-item-info">
+<div class="cart-item-name">${item.name}</div>
+<div class="cart-item-price">$${item.price.toFixed(2)} each</div>
+</div>
+<div class="qty-controls">
+<button class="qty-btn" onclick="updateQty('${item.id}', -1)">−</button>
+<span class="qty-num">${item.qty}</span>
+<button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+</div>
+<button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+</div>
+`).join('');
+footer.innerHTML = `
+<div class="cart-total">Total: $${getTotal().toFixed(2)}</div>
+<button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+`;
+}
+
+function goToCheckout() {
+closeCart();
+document.getElementById('checkout-modal').classList.add('active');
+renderOrderSummary();
+}
+
+function closeCheckout() {
+document.getElementById('checkout-modal').classList.remove('active');
+}
+
+function renderOrderSummary() {
+const summary = document.getElementById('order-summary');
+summary.innerHTML = `
+<div style="background:white;padding:1rem;border-radius:10px;margin-bottom:1rem;">
+<h3 style="color:#5D2F0A;margin-bottom:0.5rem;">Order Summary</h3>
+${cart.map(item => `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span>${item.name} × ${item.qty}</span><span>$${(item.price * item.qty).toFixed(2)}</span></div>`).join('')}
+<div style="border-top:2px solid #D4A574;margin-top:0.5rem;padding-top:0.5rem;display:flex;justify-content:space-between;font-weight:bold;color:#5D2F0A;">
+<span>Total:</span><span>$${getTotal().toFixed(2)}</span>
+</div>
+</div>
+`;
+}
+
+async function submitOrder(e) {
+e.preventDefault();
+const btn = document.getElementById('submit-order-btn');
+btn.disabled = true;
+btn.textContent = 'Processing...';
+
+const orderData = {
+customer_name: document.getElementById('customer_name').value,
+customer_email: document.getElementById('customer_email').value,
+customer_address: document.getElementById('customer_address').value,
+total: getTotal(),
+status: 'pending',
+created_at: new Date().toISOString()
+};
+
+try {
+const orderRes = await fetch(`${SUPABASE_URL}/orders`, {
+method: 'POST',
+headers: { ...headers, 'Prefer': 'return=representation' },
+body: JSON.stringify(orderData)
+});
+if (!orderRes.ok) throw new Error('Order failed');
+const orderResult = await orderRes.json();
+const orderId = Array.isArray(orderResult) ? orderResult[0].id : orderResult.id;
+
+const orderItems = cart.map(item => ({
+order_id: orderId,
+product_id: item.id,
+product_name: item.name,
+quantity: item.qty,
+price: item.price
+}));
+
+await fetch(`${SUPABASE_URL}/order_items`, {
+method: 'POST',
+headers,
+body: JSON.stringify(orderItems)
+});
+
+showConfirmation(orderId, orderData);
+cart = [];
+saveCart();
+document.getElementById('checkout-form').reset();
+} catch (err) {
+alert('Order failed: ' + err.message);
+} finally {
+btn.disabled = false;
+btn.textContent = 'Place Order';
+}
+}
+
+function showConfirmation(orderId, orderData) {
+closeCheckout();
+const details = document.getElementById('confirmation-details');
+details.innerHTML = `
+<p><strong>Order ID:</strong> #${orderId}</p>
+<p><strong>Name:</strong> ${orderData.customer_name}</p>
+<p><strong>Email:</strong> ${orderData.customer_email}</p>
+<p><strong>Total:</strong> $${orderData.total.toFixed(2)}</p>
+<p><strong>Delivery to:</strong> ${orderData.customer_address}</p>
+`;
+document.getElementById('confirmation-modal').classList.add('active');
+}
+
+function closeConfirmation() {
+document.getElementById('confirmation-modal').classList.remove('active');
+}
+
+// Load products from Supabase
+async function loadProducts() {
+const container = document.getElementById('products-container');
+try {
+const res = await fetch(`${SUPABASE_URL}/products`, { headers });
+if (!res.ok) throw new Error('Failed to load');
+const products = await res.json();
+if (!Array.isArray(products) || products.length === 0) {
+container.innerHTML = renderFallbackProducts();
+return;
+}
+container.innerHTML = products.map(p => `
+<div class="product-card">
+<div class="product-image">${p.emoji || '🥘'}</div>
+<div class="product-info">
+<div class="product-name">${p.name}</div>
+<div class="product-desc">${p.description || 'Premium nutrition for your furry friend'}</div>
+<div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+<button class="add-btn" onclick='addToCart(${JSON.stringify({id: p.id, name: p.name, price: parseFloat(p.price), emoji: p.emoji || "🥘"})})'>Add to Cart</button>
+</div>
+</div>
+`).join('');
+} catch (err) {
+container.innerHTML = renderFallbackProducts();
+}
+}
+
+function renderFallbackProducts() {
+const products = [
+{ id: '1', name: 'Chicken & Rice Classic', price: 29.99, emoji: '🍗', description: 'Wholesome chicken with brown rice for daily nutrition' },
+{ id: '2', name: 'Salmon Supreme', price: 34.99, emoji: '🐟', description: 'Omega-3 rich salmon for shiny coats and healthy skin' },
+{ id: '3', name: 'Beef & Veggie Feast', price: 32.99, emoji: '🥩', description: 'Grass-fed beef with garden vegetables' },
+{ id: '4', name: 'Puppy Power Bites', price: 27.99, emoji: '🐶', description: 'Specially formulated for growing puppies' },
+{ id: '5', name: 'Senior Care Blend', price: 36.99, emoji: '🦴', description: 'Joint support formula for older dogs' },
+{ id: '6', name: 'Lamb & Sweet Potato', price: 38.99, emoji: '🍖', description: 'Grain-free recipe with New Zealand lamb' }
+];
+return products.map(p => `
+<div class="product-card">
+<div class="product-image">${p.emoji}</div>
+<div class="product-info">
+<div class="product-name">${p.name}</div>
+<div class="product-desc">${p.description}</div>
+<div class="product-price">$${p.price.toFixed(2)}</div>
+<button class="add-btn" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+</div>
+</div>
+`).join('');
+}
+
+updateCartCount();
+loadProducts();
+</script>
+<style>
+@keyframes slideIn {
+from { transform: translateX(100%); opacity: 0; }
+to { transform: translateX(0); opacity: 1; }
+}
+</style>
+</body>
+</html>
