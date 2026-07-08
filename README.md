@@ -1,10 +1,8 @@
-# LLM Comparison: 7 Models Build the Same 3D Website
+# LLM Comparison: 7 Models Build the Same 3D Website + Full Ecommerce Store
 
-We asked 7 language models to build a 3D dog food landing page with Three.js. This repo has all the outputs, the scoring, and the research paper.
+We asked 7 language models to build a 3D dog food landing page with Three.js, then pushed further with a loop engineering experiment where models iteratively built a full ecommerce site with Supabase database integration. This repo has all the outputs, the scoring, and the research paper.
 
-## Live Demos
-
-See each model's output running in your browser:
+## Experiment 1: 3D Landing Page (Frontend)
 
 | Model | Vibe Prompt | Technical Prompt | Score |
 |---|---|---|---|
@@ -16,34 +14,57 @@ See each model's output running in your browser:
 | **Kimi K2.7 Code** (Cloud) | ✗ Auth error | ✗ Auth error | — |
 | **GLM 5.2** (Cloud) | ✗ Auth error | ✗ Auth error | — |
 
+## Experiment 2: Ecommerce Store (Loop Engineering)
+
+Each model iteratively built a full ecommerce page with 3D hero, product catalog (Supabase), shopping cart (localStorage), checkout form, and order submission. Up to 3 iterations with specific feedback.
+
+| Model | Iteration 1 | Iteration 2 | Iteration 3 | Best Score |
+|---|---|---|---|---|
+| **Nemotron 3 Super** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter2/) | — | 8.6/10 |
+| **Gemma 4** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter2/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter3/) | 8.6/10 |
+| **Qwen2.5-Coder 7B** (Local) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter2/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter3/) | 8.6/10 |
+| **Qwen2.5-Coder 14B** (Local) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder-14b/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder-14b/iter2/) | — | 8.6/10 |
+| **MiniMax M3** (Cloud) | ✗ Failed — no valid HTML | — | — | 0/10 |
+
+**Key finding:** Every model plateaued at 8.6/10. All produced working UIs but consistently failed to make real Supabase API calls — they hardcoded product data and order confirmation instead of actually fetching from / submitting to the database.
+
 ## Gallery Page
 
 [https://piyushomanwar16.github.io/dogfood-experiment/](https://piyushomanwar16.github.io/dogfood-experiment/)
 
 ## Paper
 
-- [Word Document (.docx)](paper/LLM_Comparison_Research_Paper.docx) — Full academic paper with title page, abstract, lit review, methodology, results, discussion, conclusion, and references
-- [HTML Version](paper/research_paper.html)
+- [Updated Paper (.docx)](paper/LLM_Loop_Engineering_Research_Paper.docx) — Full academic paper covering both experiments with charts and iteration analysis
 
 ## How It Works
 
-Each model got the same task in two styles:
+**Experiment 1:** Each model got the same task in two styles:
 - **Vibe prompt**: Short, casual — "Make a 3D dog food landing page"
 - **Technical prompt**: Detailed specs — exact API names, parameters, configs
 
-We scored the HTML output on 10 criteria: WebGLRenderer, Scene, Camera, animation loop, lighting, shadows, 3D geometry, UI overlay, resize handler, and OrbitControls.
+Scored on 10 criteria: WebGLRenderer, Scene, Camera, animation loop, lighting, shadows, 3D geometry, UI overlay, resize handler, and OrbitControls.
+
+**Experiment 2 (Loop Engineering):**
+1. Model receives full ecommerce requirements + Supabase credentials
+2. Generates single HTML page
+3. Scored on 14 criteria (3D, cart, API calls, checkout, etc.)
+4. Missing features fed back as specific improvement instructions
+5. Model regenerates — repeated up to 3 iterations
 
 ## Models Tested
 
-5 cloud models via Ollama Cloud, 2 local via Ollama on Apple Silicon.
+5 cloud models via Ollama Cloud (Nemotron 3 Super, Gemma 4, MiniMax M3, Kimi K2.7 Code, GLM 5.2), 2 local via Ollama on Apple Silicon (Qwen2.5-Coder 7B, 14B).
 
 ## Repo Structure
 
 ```
 ├── index.html              ← Gallery page with live links
-├── experiments/frontend/   ← Each model's output HTML files
-├── paper/                  ← Research paper (DOCX + HTML) + charts
+├── experiments/frontend/   ← Each model's landing page output
+├── experiments/ecommerce/  ← Loop engineering iterations per model
+├── paper/                  ← Research paper (DOCX) + charts
+├── data/                   ← Scoring results (JSON)
 ├── prompts/                ← The exact prompts used
 ├── run_cloud_experiments.py
-└── generate_word_paper.py
+├── run_loop_engineering.py
+└── generate_final_paper.py
 ```
