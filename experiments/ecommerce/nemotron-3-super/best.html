@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PawNutri – Premium Dog Food</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --primary: #8b5e3c;
+    --accent: #d4a373;
+    --light: #fff8f0;
+    --text: #333;
+    --muted: #666;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { text-decoration:none; color:inherit; }
+  header {
+    background: var(--primary);
+    color: var(--light);
+    padding: 1rem;
+    display:flex; align-items:center; justify-content:space-between;
+    position:relative;
+  }
+  header h1 { font-size:1.8rem; }
+  .cart-icon { position:relative; cursor:pointer; font-size:1.5rem; }
+  .cart-badge {
+    position:absolute; top:-8px; right:-8px; background:#e53935;
+    color:#fff; border-radius:50%; padding:2px 6px; font-size:0.75rem;
+  }
+  #hero { height:60vh; position:relative; overflow:hidden; background:#fff8f0; }
+  #threeCanvas { width:100%; height:100%; display:block; }
+  main { padding:2rem; max-width:1200px; margin:auto; }
+  .products { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:1.5rem; }
+  .product-card {
+    background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .product-card:hover { transform:translateY(-4px); box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+  .product-card img { width:100%; height:180px; object-fit:cover; background:#eee; }
+  .product-card .info { padding:1rem; }
+  .product-card h3 { margin-bottom:.5rem; font-size:1.2rem; color:var(--primary); }
+  .product-card p { color:var(--muted); margin-bottom:1rem; flex-grow:1; }
+  .product-card .price { font-weight:600; color:var(--primary); margin-bottom:.5rem; }
+  .product-card button {
+    width:100%; background:var(--primary); color:#fff; border:none;
+    padding:.75rem; font-size:1rem; border-radius:6px; cursor:pointer;
+    transition:background .2s;
+  }
+  .product-card button:hover { background:#6f4a2e; }
+  /* Cart Sidebar */
+  #cartSidebar {
+    position:fixed; top:0; right:-350px; width:300px; height:100vh;
+    background:#fff; box-shadow:-2px 0 8px rgba(0,0,0,0.15);
+    transition:right .3s ease; z-index:1000; overflow-y:auto;
+    padding:1.5rem;
+  }
+  #cartSidebar.open { right:0; }
+  #cartSidebar h2 { margin-bottom:1rem; color:var(--primary); }
+  .cart-item { display:flex? Actually we need proper CSS: */
+  .cart-item { display:flex; align-items:center; justify-content:space-between; padding:.5rem 0; border-bottom:1px solid #eee; }
+  .cart-item-info { flex:1; }
+  .cart-item-controls { display:flex; gap:.5rem; align-items:center; }
+  .cart-item-controls input[type="number"] { width:50px; text-align:center; }
+  .cart-total { margin-top:1.5rem; font-size:1.2rem; text-align:right; }
+  .cart-total span { font-weight:600; }
+  #checkoutBtn, #continueShopping {
+    width:100%; margin-top:1rem; padding:.75rem; border:none;
+    border-radius:6px; font-size:1rem; cursor:pointer;
+  }
+  #checkoutBtn { background:var(--primary); color:#fff; }
+  #continueShopping { background:#eee; color:#333; }
+  #checkoutForm { display:flex; flex-direction:column; gap:.8rem; }
+  #checkoutForm input { padding:.75rem; border:1px solid #ccc; border-radius:6px; font-size:1rem; }
+  #checkoutForm button { background:var(--primary); color:#fff; border:none; padding:.75rem; border-radius:6px; cursor:pointer; }
+  #checkoutForm button:hover { opacity:.9; }
+  #confirmation { text-align:center; padding:2rem; color:var(--primary); font-size:1.2rem; display:none; }
+  @media (max-width:768px) {
+    header { flex-wrap:wrap; gap:.5rem; }
+    .products { grid-template-columns:1fr; }
+    #cartSidebar { width:100%; right:-100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PawNutri</h1>
+  <div>
+    <span class="cart-icon" id="cartToggle">🛒</span>
+    <span class="cart-badge" id="cartBadge">0</span>
+  </div>
+</header>
+
+<section id="hero">
+  <canvas id="threeCanvas"></canvas>
+</section>
+
+<main>
+  <section class="products" id="productGrid">
+    <!-- Products will be injected here -->
+  </section>
+</main>
+
+<!-- Cart Sidebar -->
+<aside id="cartSidebar">
+  <button id="closeCart" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;color:#666;">✖</button>
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <div class="cart-total">Total: <span id="cartTotal">$0.00</span></div>
+  <button id="checkoutBtn">Checkout</button>
+  <button id="continueShopping" style="display:none;">Continue Shopping</button>
+  <form id="checkoutForm" style="display:none;">
+    <input type="text" id="custName" placeholder="Customer Name" required>
+    <input type="email" id="custEmail" placeholder="Customer Email" required>
+    <input type="text" id="custAddr" placeholder="Delivery Address" required>
+    <button type="submit">Place Order</button>
+  </form>
+  <div id="confirmation"></div>
+</aside>
+
+<script type="module">
+  import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+  const SUPABASE_URL = 'https://kofyaexiiibbuqkpwwwz.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+
+  // ========== Cart Logic ==========
+  const cart = JSON.parse(localStorage.getItem('pawNutriCart') || '[]');
+  function saveCart() { localStorage.setItem('pawNutriCart', JSON.stringify(cart)); }
+  function updateCartBadge() { document.getElementById('cartBadge').textContent = cart.reduce((sum,item)=>sum+item.qty,0); }
+  function renderCart() {
+    const container = document.getElementById('cartItems');
+    if (!container) return;
+    container.innerHTML = '';
+    if (cart.length===0) {
+      container.innerHTML = '<p>Your cart is empty.</p>';
+      document.getElementById('cartTotal').textContent = '$0.00';
+      document.getElementById('continueShopping').style.display = 'inline-block';
+      document.getElementById('checkoutBtn').style.display = 'none';
+      return;
+    }
+    document.getElementById('continueShopping').style.display = 'none';
+    document.getElementById('checkoutBtn').style.display = 'block';
+    let total = 0;
+    cart.forEach((item, idx)=>{
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <div class="cart-item-info">
+          <strong>${item.name}</strong><br>
+          <small>${item.description}</small>
+        </div>
+        <div class="cart-item-controls">
+          <button class="qty-btn" data-idx="${idx}" data-change="-1">−</button>
+          <input type="number" min="1" value="${item.qty}" data-idx="${idx}" class="qty-input">
+          <button class="qty-btn" data-idx="${idx}" data-change="+1">+</button>
+          <span>$${(item.price*item.qty).toFixed(2)}</span>
+          <button class="remove-btn" data-idx="${idx}" style="background:none;border:none;color:#c62828;">✕</button>
+        </div>
+      `;
+      container.appendChild(div);
+      total += item.price * item.qty;
+    });
+    document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+
+    // qty buttons
+    document.querySelectorAll('.qty-btn').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const idx = Number(e.target.dataset.idx);
+        const change = Number(e.target.dataset.change);
+        if (cart[idx].qty + change < 1) return;
+        cart[idx].qty += change;
+        saveCart();
+        renderCart();
+        updateCartBadge();
+      });
+    });
+    document.querySelectorAll('.qty-input').forEach(inp=>{
+      inp.addEventListener('change', e=>{
+        const idx = Number(e.target.dataset.idx);
+        const val = Math.max(1, Number(e.target.value));
+        if (isNaN(val)) return;
+        cart[idx].qty = val;
+        saveCart();
+        renderCart();
+        updateCartBadge();
+      });
+    });
+    document.querySelectorAll('.remove-btn').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const idx = Number(e.target.dataset.idx);
+        cart.splice(idx,1);
+        saveCart();
+        renderCart();
+        updateCartBadge();
+      });
+    });
+  }
+  function addToCart(product){
+    const existing = cart.find(p=>p.id===product.id);
+    if (existing){
+      existing.qty += 1;
+    }else{
+      cart.push({...product, qty:1});
+    }
+    saveCart();
+    renderCart();
+    updateCartBadge();
+  }
+
+  // ========== Fetch Products ==========
+  async function fetchProducts(){
+    try{
+      const resp = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`,{
+        headers:{
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      renderProducts(data);
+    }catch(err){
+      console.error(err);
+      document.getElementById('productGrid').innerHTML = '<p>Failed to load products.</p>';
+    }
+  }
+  function renderProducts(products){
+    const grid = document.getElementById('productGrid');
+    grid.innerHTML = '';
+    products.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img src="${p.image_url || 'https://via.placeholder.com/400x300?placeholder=Dog+Food'}" alt="${p.name}">
+        <div class="info">
+          <h3>${p.name}</h3>
+          <p>${p.description}</p>
+          <div class="price">$${Number(p.price).toFixed(2)}</div>
+          <button data-id="${p.id}" data-name="${p.name}" data-desc="${p.description}" data-price="${Number(p.price)}">Add to Cart</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    // attach listeners
+    grid.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const btn = e.target;
+        const product = {
+          id: btn.dataset.id,
+          name: btn.dataset.name,
+          description: btn.dataset.desc,
+          price: parseFloat(btn.dataset.price)
+        };
+        addToCart(product);
+      });
+    });
+  }
+
+  // ========== Three.js Hero ==========
+  function initThree(){
+    const canvas = document.getElementById('threeCanvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xfff8f0);
+    const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
+    camera.position.set(0, 2, 5);
+    const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5,10,7);
+    scene.add(dirLight);
+
+    // Dog food bag (simple box)
+    const bagGeometry = new THREE.BoxGeometry(1.8, 2.8, 0.9);
+    const bagMaterial = new THREE.MeshStandardMaterial({color:0x8b5e3c, roughness:0.4, metalness:0.1});
+    const bag = new THREE.Mesh(bagGeometry, bagMaterial);
+    bag.position.y = 0;
+    scene.add(bag);
+
+    // Kibble particles
+    const kibbleCount = 120;
+    const kibbleGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+    const kibbleMaterial = new THREE.MeshStandardMaterial({color:0xd4a373});
+    const kibbles = [];
+    for(let i=0;i<kibbleCount;i++){
+      const mesh = new THREE.Mesh(kibbleGeometry, kibbleMaterial);
+      mesh.position.set(
+        (Math.random()-0.5)*2,
+        Math.random()*3 -1,
+        (Math.random()-0.5)*2
+      );
+      mesh.userData = { dy: 0.002 + Math.random()*0.003, speed: 0.001 + Math.random()*0.002 };
+      scene.add(mesh);
+      kibbles.push(mesh);
+    }
+
+    function animate(){
+      requestAnimationFrame(animate);
+      bag.rotation.y += 0.004;
+      bag.rotation.z += 0.001;
+      kibbles.forEach(k=>{
+        k.position.y += k.userData.dy;
+        k.position.x += Math.sin(Date.now()*0.001 + k.position.x)*k.userData.speed;
+        k.position.z += Math.cos(Date.now()*0.001 + k.position.z)*k.userData.speed;
+        if(k.position.y > 3){
+          k.position.y = -1;
+          k.position.x = (Math.random()-0.5)*2;
+          k.position.z = (Math.random()-0.5)*2;
+        }
+      });
+      renderer.render(scene, camera);
+    }
+    animate();
+    window.addEventListener('resize',()=>{
+      camera.aspect = canvas.clientWidth/canvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    });
+  }
+
+  // ========== Cart Sidebar Toggle ==========
+  document.getElementById('cartToggle').addEventListener('click',()=>{
+    document.getElementById('cartSidebar').classList.toggle('open');
+  });
+  document.getElementById('closeCart').addEventListener('click',()=>{
+    document.getElementById('cartSidebar').classList.remove('open');
+  });
+
+  // ========== Checkout Flow ==========
+  document.getElementById('checkoutBtn').addEventListener('click',()=>{
+    document.getElementById('checkoutForm').style.display = 'flex';
+    document.getElementById('continueShopping').style.display = 'none';
+    document.getElementById('checkoutBtn').style.display = 'none';
+  });
+  document.getElementById('continueShopping').addEventListener('click',()=>{
+    document.getElementById('checkoutForm').style.display = 'none';
+    document.getElementById('continueShopping').style.display = 'none';
+    document.getElementById('checkoutBtn').style.display = 'block';
+  });
+
+  document.getElementById('checkoutForm?. Actually we need to attach submit handler:
+  document.getElementById('checkoutForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const name = document.getElementById('custName').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    const addr = document.getElementById('custAddr').value.trim').value.trim();
+    if(!name||!email||!addr==='
+    alert('Please fill all fields');
+    return;
+    }
+    const total = cart.reduce((sum,item)=>sum+item.price*item.qty,0);
+    try{
+      // 1. Create order
+      const orderResp = await fetch(`${SUPABASE_URL}/rest/v1/orders`,{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_ANON_KEY,
+          'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        },
+        body:JSON.stringify({customer_name:name,customer_email:email,customer_address:addr,total})
+      });
+      if(!orderResp.ok) throw new Error(`Order failed: ${orderResp.status}`);
+      const orderData = await orderResp.json();
+      const orderId = orderData[0].id;
+      // 2. Create order items
+      const items = cart.map(item=>({
+        order_id:orderId,
+        product_id:item.id,
+        quantity:item.qty,
+        price:item.price
+      }));
+      const itemsResp = await fetch(`${SUPABASE_URL}/rest/v1/order_items`,{
+        method:'POST',
+        headers:{
+          'apikey':SUPABASE_ANON_KEY,
+          'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        },
+        body:JSON.stringify(items)
+      });
+      if(!itemsResp.ok) throw new Error(`Order items failed: ${itemsResp.status}`);
+      // Success
+      document.getElementById('confirmation').textContent = `Thank you! Your order #${orderId} has been placed.`;
+      document.getElementById('confirmation').style.display = 'block';
+      // Clear cart
+      cart.length = 0;
+      saveCart();
+      renderCart();
+      updateCartBadge();
+      // Hide form, show continue button
+      setTimeout(()=>{
+        document.getElementById('checkoutForm').style.display = 'none';
+        document.getElementById('continueShopping').style.display = 'inline-block';
+        document.getElementById('confirmation').style.display = 'none';
+      },3000);
+    }catch(err){
+      console.error(err);
+      alert('Checkout failed: '+err.message);
+    }
+  });
+
+  // ========== Init ==========
+  fetchProducts();
+  initThree();
+  renderCart();
+  updateCartBadge();
+</script>
+</body>
+</html>

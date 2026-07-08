@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PawNutri – Premium Dog Food</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --primary: #8b5e3c;
+    --accent: #d4a373;
+    --light: #fff8f0;
+    --text: #3e2723;
+    --muted: #5d4037;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header, section, footer { padding: 2rem; max-width: 1200px; margin:auto; }
+  h1, h2 { color: var(--primary); margin-bottom:1rem; }
+  a { color: var(--primary); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+
+  /* Hero Three.js container */
+  #hero { position:relative; height:600px; overflow:hidden; border-radius:12px; margin-bottom:2rem; }
+  #hero canvas { display:block; width:100%; height:100%; }
+
+  /* Product grid */
+  #products { display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); }
+  .product-card {
+    background:var(--light);
+    border:1px solid #e0d6c8;
+    border-radius:10px;
+    padding:1.2rem;
+    text-align:center;
+    transition:transform .2s, box-shadow .2s;
+  }
+  .product-card:hover { transform:translateY(-4px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+  .product-card img { max-width:100%; height:auto; border-radius:8px; margin-bottom:.8rem; }
+  .product-card h3 { font-size:1.1rem; margin:.5rem 0; }
+  .product-card p { font-size:.9rem; color:var(--muted); margin-bottom:.8rem; }
+  .product-card .price { font-weight:600; font-size:1.2rem; color:var(--primary); margin-bottom:1rem; }
+  .product-card button {
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:.6rem 1.2rem;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:.9rem;
+    transition:background .2s;
+  }
+  .product-card button:hover { background:var(--accent); }
+
+  /* Cart */
+  #cartOverlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.4);
+    display:none; align-items:flex-end; justify-content:flex-end;
+    z-index:1000;
+  }
+  #cartPanel {
+    width:320px; max-height:80vh; background:#fff;
+    padding:1.5rem; overflow-y:auto;
+    border-top-left-radius:12px; border-bottom-left-radius:12px;
+    box:-2px 0 8px rgba(0,0,0,.2);
+    transform:translateX(100%); transition:transform .3s ease;
+  }
+  #cartOverlay.active #cartPanel { transform:translateX(0); }
+  #cartPanel h2 { margin-top:0; margin-bottom:1rem; font-size:1.3rem; }
+  .cart-item {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:.6rem 0; border-bottom:1px solid #eee;
+  }
+  .cart-item-info { flex:1; }
+  .cart-item-controls {
+    display:flex; gap:.4rem; align-items:center;
+  }
+  .cart-item-controls button {
+    background:none; border:none; color:var(--muted);
+    font-size:1.2rem; cursor:pointer;
+  }
+  .cart-item-controls input {
+    width:40px; text-align:center; border:1px solid #ccc; border-radius:4px;
+  }
+  .cart-total { margin-top:1.2rem; font-size:1.1rem; text-align:right; font-weight:600; }
+  #checkoutBtn {
+    width:100%; margin-top:1rem; padding:.8rem;
+    background:var(--primary); color:#fff; border:none;
+    border-radius:6px; font-size:1rem; cursor:pointer;
+  }
+  #checkoutBtn:hover { background:var(--accent); }
+
+  /* Checkout modal */
+  #checkoutOverlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    display:none; align-items:center; justify-content:center;
+    z-index:1100;
+  }
+  #checkoutForm {
+    background:#fff; padding:2rem; border-radius:12px;
+    width:90%; max-width:400px; box-shadow:0 4px 20px rgba(0,0,0,.15);
+  }
+  #checkoutForm h2 { margin-top:0; margin-bottom:1.5rem; text-align:center; }
+  #checkoutForm label { display:block; margin-bottom:.4rem; font-weight:600; }
+  #checkoutForm input {
+    width:100%; padding:.6rem; margin-bottom:1rem;
+    border:1px solid #ccc; border-radius:6px; font-size:1rem;
+  }
+  #checkoutForm button {
+    width:100%; padding:.8rem; background:var(--primary);
+    color:#fff; border:none; border-radius:6px; font-size:1rem;
+    cursor:pointer;
+  }
+  #checkoutForm button:hover { background:var(--accent); }
+  #confirmation {
+    display:none; text-align:center; padding:2rem;
+    background:#e8f5e9; border-radius:12px; margin-top:1.5rem;
+  }
+  #confirmation p { font-size:1.1rem; margin-bottom:1rem; color:#2e7d32; }
+  #confirmation button {
+    background:var(--primary); color:#fff; border:none;
+    padding:.6rem 1.2rem; border-radius:6px; cursor:pointer;
+  }
+  #confirmation button:hover { background:var(--accent); }
+
+  /* Responsive */
+  @media (max-width:600px) {
+    header, section, footer { padding:1rem; }
+    #hero { height:400px; }
+    #cartPanel { width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PawNutri</h1>
+  <p>Premium nutrition for your beloved dog</p>
+</header>
+
+<!-- Hero 3D Scene -->
+<section id="hero"></section>
+
+<!-- Products -->
+<section>
+  <h2>Our Products</h2>
+  <div id="products">Loading...</div>
+</section>
+
+<!-- Cart Overlay -->
+<div id="cartOverlay">
+  <aside id="cartPanel">
+    <h2>Your Cart</h2>
+    <div id="cartItems"></div>
+    <div class="cart-total">Total: <span id="cartTotal">$0.00</span></div>
+    <button id="checkoutBtn">Checkout</button>
+  </aside>
+</div>
+
+<!-- Checkout Overlay -->
+<div id="checkoutOverlay">
+  <form id="checkoutForm">
+    <h2>Checkout</h2>
+    <label for="cName">Name</label>
+    <input type="text" id="cName" required placeholder="Your full name">
+    <label for="cEmail">Email</label>
+    <input type="email" id="cEmail" required placeholder="you@example.com">
+    <label for="cAddress">Address</label>
+    <input type="text" id="cAddress" required placeholder="Street, City, ZIP">
+    <button type="submit">Place Order</button>
+  </form>
+  <div id="confirmation">
+    <h2>Thank you!</h2>
+    <p id="confirmMsg">Your order has been placed.</p>
+    <button id="continueShopping">Continue Shopping</button>
+  </div>
+</div>
+
+<footer>
+  <p style="text-align:center; font-size:.9rem; color:var(--muted);">© 2025 PawNutri – All rights reserved</p>
+</footer>
+
+<!-- Importmap for Three.js module -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+  import * as THREE from 'three';
+
+  // ========== CONFIG ==========
+  const SUPABASE_URL = 'https://kofyaexiiibbuqkpwwwz.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+  const PRODUCTS_ENDPOINT = `${SUPABASE_URL}/rest/v1/products`;
+  const ORDERS_ENDPOINT = `${SUPABASE_URL}/rest/v1/orders`;
+  const ORDER_ITEMS_ENDPOINT = `${SUPABASE_URL}/rest/v1/order_items`;
+
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  // ========== STATE ==========
+  let cart = []; // array of {id, name, price, quantity}
+  let productsData = [];
+
+  // ========== UTILITIES ==========
+  function loadCart() {
+    const saved = localStorage.getItem('pawNutriCart');
+    if (saved) {
+      try { cart = JSON.parse(saved); } catch(e) { cart = []; }
+    }
+  }
+  function saveCart() {
+    localStorage.setItem('pawNutriCart', JSON.stringify(cart));
+  }
+  function formatMoney(num) {
+    return `$${Number(num).toFixed(2)}`;
+  }
+
+  // ========== CART LOGIC ==========
+  function addToCart(product) {
+    const existing = cart.find(i => i.id === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+    saveCart();
+    renderCartUI();
+  }
+  function updateQuantity(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+      cart = cart.filter(i => i.id !== id);
+    }
+    saveCart();
+    renderCartUI();
+  }
+  function getCartTotal() {
+    return cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+  }
+
+  // ========== RENDER CART UI ==========
+  function renderCartUI() {
+    const cartItemsDiv = document.getElementById('cartItems');
+    const cartTotalDiv = document.getElementById('cartTotal');
+    if (!cartItemsDiv) return;
+
+    if (cart.length === 0) {
+      cartItemsDiv.innerHTML = '<p style="text-align:center; color:#666;">Your cart is empty.</p>';
+      cartTotalDiv.textContent = formatMoney(0);
+      return;
+    }
+
+    cartItemsDiv.innerHTML = '';
+    cart.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <div class="cart-item-info">
+          <strong>${item.name}</strong><br>
+          <small>${formatMoney(item.price)} each</small>
+        </div>
+        <div class="cart-item-controls">
+          <button data-id="${item.id}" data-change="-1">−</button>
+          <input type="number" value="${item.quantity}" min="1" readonly>
+          <button data-id="${item.id}" data-change="+1">+</button>
+        </div>
+      `;
+      cartItemsDiv.appendChild(div);
+    });
+    cartTotalDiv.textContent = formatMoney(getCartTotal());
+
+    // attach listeners
+    document.querySelectorAll('#cartItems button').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const id = Number(btn.dataset.id);
+        const change = Number(btn.dataset.change);
+        updateQuantity(id, change);
+      });
+    });
+  }
+
+  // ========== FETCH PRODUCTS ==========
+  async function fetchProducts() {
+    try {
+      const resp = await fetch(PRODUCTS_ENDPOINT, { headers });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      productsData = data;
+      renderProducts();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('products').innerHTML = '<p style="color:red;">Failed to load products.</p>';
+    }
+  }
+  function renderProducts() {
+    const container = document.getElementById('products');
+    if (!container) return;
+    if (productsData.length === 0) {
+      container.innerHTML = '<p>No products available.</p>';
+      return;
+    }
+    container.innerHTML = '';
+    productsData.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img src="${p.image_url || 'https://via.placeholder.com/300x200?text=Dog+Food'}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>${p.description || ''}</p>
+        <div class="price">${formatMoney(p.price)}</div>
+        <button data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>
+      `;
+      container.appendChild(card);
+    });
+    // attach add-to-cart listeners
+    container.querySelectorAll('button[data-id]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const product = {
+          id: Number(btn.dataset.id),
+          name: btn.dataset.name,
+          price: parseFloat(btn.dataset.price)
+        };
+        addToCart(product);
+      });
+    });
+  }
+
+  // ========== CHECKOUT LOGIC ==========
+  const checkoutOverlay = document.getElementById('checkoutOverlay');
+  const checkoutForm = document.getElementById('checkoutForm');
+  const confirmationDiv = document.getElementById('confirmation');
+  const confirmMsg = document.getElementById('confirmMsg');
+  const continueBtn = document.getElementById('continueShopping');
+
+  async function submitOrder() {
+    const name = document.getElementById('cName').value.trim();
+    const email = document.getElementById('cEmail').value.trim();
+    const address = document.getElementById('cAddress').value.trim();
+    if (!name || !email || !address) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    const total = getCartTotal();
+    try {
+      // 1️⃣ Insert order
+      const orderResp = await fetch(ORDERS_ENDPOINT, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ customer_name: name, customer_email: email, customer_address: address, total })
+      });
+      if (!orderResp.ok) throw new Error(`Order failed: ${orderResp.status}`);
+      const orderData = await orderResp.json();
+      const orderId = orderData[0].id; // assuming return=representation gives array
+
+      // 2️⃣ Insert order items
+      const itemPromises = cart.map(item =>
+        fetch(ORDER_ITEMS_ENDPOINT, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            order_id: orderId,
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price
+          })
+        })
+      );
+      const itemResponses = await Promise.all(itemPromises);
+      for (const resp of itemResponses) {
+        if (!resp.ok) throw new Error(`Order item failed: ${resp.status}`);
+      }
+
+      // Success
+      checkoutOverlay.style.display = 'none';
+      confirmationDiv.style.display = 'block';
+      confirmMsg.textContent = `Thank you, ${name}! Your order #${orderId} has been placed.`;
+      // clear cart
+      cart = [];
+      saveCart();
+      renderCartUI();
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong. Please try again later.');
+    }
+  }
+
+  // ========== EVENT LISTENERS ==========
+  document.getElementById('cartOverlay').addEventListener('click', e => {
+    if (e.target.id === 'cartOverlay') {
+      e.target.classList.remove('active');
+    }
+  });
+  document.getElementById('checkoutBtn').addEventListener('click', () => {
+    document.getElementById('cartOverlay').classList.remove('active');
+    checkoutOverlay.style.display = 'flex';
+    // reset form
+    checkoutForm.reset();
+  });
+  checkoutForm.addEventListener('submit', e => {
+    e.preventDefault();
+    submitOrder();
+  });
+  continueBtn.addEventListener('click', () => {
+    confirmationDiv.style.display = 'none';
+    document.getElementById('cartOverlay').classList.add('active');
+  });
+
+  // ========== THREE.JS HERO ==========
+  function initThreeJS() {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xfaf8f5);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 1.5, 3);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('hero').appendChild(renderer.domElement);
+
+    // Lighting
+    const hemi = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.2);
+    scene.add(hemi);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    // Dog food bag (simple cylinder)
+    const bagGeometry = new THREE.CylinderGeometry(0.6, 0.6, 1.8, 32);
+    const bagMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5e3c, roughness: 0.4, metalness: 0.1 });
+    const bag = new THREE.Mesh(bagGeometry, bagMaterial);
+    bag.rotation.x = Math.PI / 2; // lay flat
+    scene.add(bag);
+
+    // Floating kibble particles
+    const kibbleCount = 120;
+    const kibblePositions = new Float32Array(kibbleCount * 3);
+    const kibbleColors = new Float32Array(kibbleCount * 3);
+    for (let i = 0; i < kibbleCount; i++) {
+      const i3 = i * 3;
+      kibblePositions[i3]     = (Math.random() - 0.5) * 4;
+      kibblePositions[i3 + 1] = Math.random() * 3 + 0.5;
+      kibblePositions[i3 + 2] = (Math.random() - 0.5) * 4;
+      // warm beige/tan
+      kibbleColors[i3]     = 0.8 + Math.random() * 0.2;
+      kibbleColors[i3 + 1] = 0.65 + Math.random() * 0.2;
+      kibbleColors[i3 + 2] = 0.45 + Math.random() * 0.2;
+    }
+    const kibbleGeometry = new THREE.BufferGeometry();
+    kibbleGeometry.setAttribute('position', new THREE.BufferAttribute(kibblePositions, 3));
+    kibbleGeometry.setAttribute('color', new THREE.BufferAttribute(kibbleColors, 3));
+    const kibbleMaterial = new THREE.PointsMaterial({ size: 0.02, vertexColors: true });
+    const kibblePoints = new THREE.Points(kibbleGeometry, kibbleMaterial);
+    scene.add(kibblePoints);
+
+    // Animation
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+      bag.rotation.y = elapsed * 0.2;
+      // slow drift for kibble
+      const positions = kibbleGeometry.attributes.position.array;
+      for (let i = 0; i < kibbleCount; i++) {
+        const i3 = i * 3;
+        positions[i3]     += Math.sin(elapsed + i) * 0.001;
+        positions[i3 + 1] += Math.cos(elapsed * 0.5 + i) * 0.0005;
+        positions[i3 + 2] += Math.sin(elapsed * 0.3 + i) * 0.001;
+      }
+      kibbleGeometry.attributes.position.needsUpdate = true;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  // ========== INIT ==========
+  loadCart();
+  renderCartUI();
+  fetchProducts();
+  initThreeJS();
+</script>
+</body>
+</html>

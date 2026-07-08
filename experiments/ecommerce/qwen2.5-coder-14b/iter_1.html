@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawNutri - Fresh Kibble for Your Paws</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5deb3;
+            color: #8b4513;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #d2691e;
+            color: white;
+        }
+        .logo {
+            font-size: 24px;
+        }
+        .cart-icon {
+            cursor: pointer;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .product-card {
+            background-color: #fff8dc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .product-card img {
+            width: 100%;
+            height: auto;
+            padding: 20px;
+        }
+        .product-card button {
+            background-color: #d2691e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .cart {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background-color: #fff8dc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transition: right 0.3s ease-in-out;
+        }
+        .cart.active {
+            right: 0;
+        }
+        .cart-header {
+            padding: 20px;
+            background-color: #d2691e;
+            color: white;
+            text-align: center;
+        }
+        .cart-items {
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100% - 80px);
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .checkout-form {
+            padding: 20px;
+            background-color: #fff8dc;
+            border-top: 1px solid #d2691e;
+        }
+        .checkout-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .checkout-form button {
+            background-color: #d2691e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">PawNutri</div>
+        <div class="cart-icon" onclick="toggleCart()">🛒</div>
+    </div>
+
+    <div id="threejs-scene"></div>
+
+    <div class="product-grid" id="product-grid"></div>
+
+    <div class="cart" id="cart">
+        <div class="cart-header">Shopping Cart</div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="checkout-form">
+            <input type="text" id="customer_name" placeholder="Name" required>
+            <input type="email" id="customer_email" placeholder="Email" required>
+            <input type="text" id="customer_address" placeholder="Address" required>
+            <button onclick="checkout()">Checkout</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js 3D Scene
+        function initThreeJS() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('threejs-scene').appendChild(renderer.domElement);
+
+            // Load texture
+            const textureLoader = new THREE.TextureLoader();
+            const bagTexture = textureLoader.load('path/to/bag-texture.jpg');
+
+            // Create a box geometry for the dog food bag
+            const geometry = new THREE.BoxGeometry(2, 3, 1);
+            const material = new THREE.MeshBasicMaterial({ map: bagTexture });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            camera.position.z = 5;
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+        }
+
+        initThreeJS();
+
+        // Product Catalog
+        async function fetchProducts() {
+            try {
+                const response = await fetch('https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/products', {
+                    headers: {
+                        'apikey': 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3',
+                        'Authorization': 'Bearer sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3'
+                    }
+                });
+                const products = await response.json();
+                displayProducts(products);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            }
+        }
+
+        function displayProducts(products) {
+            const productGrid = document.getElementById('product-grid');
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>$${product.price.toFixed(2)}</p>
+                    <button onclick="addToCart(${product.id})">Add to Cart</button>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        fetchProducts();
+
+        // Shopping Cart
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function addToCart(productId) {
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            cart.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                itemDiv.innerHTML = `
+                    <span>Product ${item.id}</span>
+                    <input type="number" value="${item.quantity}" onchange="updateCartItem(${item.id}, event)">
+                    <button onclick="removeFromCart(${item.id})">Remove</button>
+                `;
+                cartItems.appendChild(itemDiv);
+            });
+        }
+
+        function updateCartItem(id, event) {
+            const quantity = parseInt(event.target.value);
+            const item = cart.find(i => i.id === id);
+            if (quantity > 0) {
+                item.quantity = quantity;
+            } else {
+                removeFromCart(id);
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        updateCartUI();
+
+        function toggleCart() {
+            document.getElementById('cart').classList.toggle('active');
+        }
+
+        // Checkout Form
+        async function checkout() {
+            const customerName = document.getElementById('customer_name').value;
+            const customerEmail = document.getElementById('customer_email').value;
+            const customerAddress = document.getElementById('customer_address').value;
+
+            if (!customerName || !customerEmail || !customerAddress) {
+                alert('Please fill out all fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/orders', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3',
+                        'Authorization': 'Bearer sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customer_name: customerName,
+                        customer_email: customerEmail,
+                        customer_address: customerAddress
+                    })
+                });
+
+                const order = await response.json();
+                const orderId = order.id;
+
+                cart.forEach(item => {
+                    fetch('https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/order_items', {
+                        method: 'POST',
+                        headers: {
+                            'apikey': 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3',
+                            'Authorization': 'Bearer sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            order_id: orderId,
+                            product_id: item.id,
+                            quantity: item.quantity
+                        })
+                    });
+                });
+
+                cart = [];
+                localStorage.removeItem('cart');
+                updateCartUI();
+                alert('Checkout successful!');
+            } catch (error) {
+                console.error('Error during checkout:', error);
+            }
+        }
+    </script>
+</body>
+</html>

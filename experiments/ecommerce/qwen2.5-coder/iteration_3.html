@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawNutri</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hero-section {
+            width: 100%;
+            height: 40vh;
+            background-color: #f5deb3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .cart-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .cart-modal.open {
+            display: block;
+        }
+        .cart-item {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #ff8c00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <h1>PawNutri Premium Dog Food</h1>
+    </div>
+    <div id="product-grid" class="product-grid"></div>
+    <button id="cart-button">Cart (0)</button>
+    <div id="cart-modal" class="cart-modal">
+        <div>
+            <span>Total: $<span id="cart-total">0.00</span></span>
+            <button id="checkout-btn">Checkout</button>
+        </div>
+        <ul id="cart-items"></ul>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+
+        // Initialize Three.js scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Add a directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        // Load dog food bag and kibble particles
+        const loader = new THREE.GLTFLoader();
+        loader.load('https://threejsfundamentals.org/threejs/resources/models/untitled.glb', function (gltf) {
+            scene.add(gltf.scene);
+            animate();
+        });
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate the dog food bag
+            const time = Date.now() * 0.001;
+            scene.rotation.y = time * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Fetch products from Supabase
+        const supabaseUrl = 'https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/products';
+        const supabaseKey = 'sb_publishable_HzadVL89uY9sfoBI4XnuHw_aieHtKG3';
+
+        async function fetchProducts() {
+            const response = await fetch(supabaseUrl, {
+                method: 'GET',
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return await response.json();
+        }
+
+        // Display products
+        async function displayProducts() {
+            const productGrid = document.getElementById('product-grid');
+            const products = await fetchProducts();
+
+            products.forEach(product => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <h2>${product.name}</h2>
+                    <p>${product.description}</p>
+                    <p>$${product.price}</p>
+                    <button class="add-to-cart" data-id="${product.id}">Add to Cart</button>
+                `;
+                productGrid.appendChild(div);
+            });
+
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', addToCart);
+            });
+        }
+
+        // Add item to cart
+        function addToCart(event) {
+            const productId = event.target.dataset.id;
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existingItem = cart.find(item => item.id === productId);
+
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartModal();
+        }
+
+        // Update cart modal
+        function updateCartModal() {
+            const cartModal = document.getElementById('cart-modal');
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+
+            let total = 0;
+            cartItems.innerHTML = '';
+
+            JSON.parse(localStorage.getItem('cart')).forEach(item => {
+                const response = await fetch(`${supabaseUrl}/${item.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const product = await response.json();
+
+                total += item.quantity * product.price;
+
+                const li = document.createElement('li');
+                li.classList.add('cart-item');
+                li.innerHTML = `
+                    <span>${product.name} x ${item.quantity}</span>
+                    <span>$${(item.quantity * product.price).toFixed(2)}</span>
+                `;
+                cartItems.appendChild(li);
+            });
+
+            cartTotal.textContent = total.toFixed(2);
+            cartModal.classList.toggle('open', cart.length > 0);
+        }
+
+        // Checkout form
+        document.getElementById('checkout-btn').addEventListener('click', async () => {
+            const customerName = document.querySelector('input[name="customer_name"]').value;
+            const customerEmail = document.querySelector('input[name="customer_email"]').value;
+            const customerAddress = document.querySelector('input[name="customer_address"]').value;
+
+            if (!customerName || !customerEmail || !customerAddress) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem('cart'));
+            let total = 0;
+
+            for (const item of cart) {
+                const response = await fetch(`${supabaseUrl}/${item.id}`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const product = await response.json();
+
+                total += item.quantity * product.price;
+
+                // Insert into order_items
+                fetch('https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/order_items', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        order_id: Math.random().toString(36).substr(2, 9),
+                        product_id: item.id,
+                        quantity: item.quantity,
+                        price: item.quantity * product.price
+                    })
+                });
+            }
+
+            // Insert into orders
+            fetch('https://kofyaexiiibbuqkpwwwz.supabase.co/rest/v1/orders', {
+                method: 'POST',
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify({
+                    customer_name: customerName,
+                    customer_email: customerEmail,
+                    customer_address: customerAddress,
+                    total
+                })
+            });
+
+            alert('Order placed successfully!');
+            localStorage.removeItem('cart');
+            updateCartModal();
+        });
+
+        // Open cart modal on button click
+        document.getElementById('cart-button').addEventListener('click', () => {
+            updateCartModal();
+        });
+
+        // Display products and initialize the 3D scene
+        displayProducts();
+    </script>
+</body>
+</html>
