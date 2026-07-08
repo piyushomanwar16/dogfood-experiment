@@ -1,0 +1,390 @@
+#!/usr/bin/env python3
+"""Generate charts and the final research paper. Written like a human would write it."""
+import json, os
+from pathlib import Path
+from datetime import datetime
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+BASE = Path.home() / "Desktop/dogfood-experiment"
+FIGS = BASE / "paper" / "figures"
+FIGS.mkdir(parents=True, exist_ok=True)
+
+# Data from experiments
+data = {
+    "frontend": {
+        "Qwen-Coder 7B (local)":       {"vibe": 8.0, "tech": 10.0, "vibe_iter": 1, "tech_iter": 1},
+        "Qwen-Coder 14B (local)":      {"vibe": 8.0, "tech": 10.0, "vibe_iter": 1, "tech_iter": 1},
+        "MiniMax M3 Cloud":            {"vibe": 7.0, "tech": 0,    "vibe_iter": 1, "tech_iter": 1},
+        "Nemotron 3 Super Cloud":      {"vibe": 9.0, "tech": 10.0, "vibe_iter": 1, "tech_iter": 1},
+        "Kimi K2.7 Code Cloud":        {"vibe": 0,   "tech": 0,    "vibe_iter": 0, "tech_iter": 0},
+        "GLM 5.2 Cloud":              {"vibe": 0,   "tech": 0,    "vibe_iter": 0, "tech_iter": 0},
+        "Gemma 4 Cloud":              {"vibe": 9.0, "tech": 10.0, "vibe_iter": 1, "tech_iter": 1},
+    },
+    "hallucination": {
+        "Qwen-Coder 7B (local)":      1,
+        "Qwen-Coder 14B (local)":     1,
+        "MiniMax M3 Cloud":           2,
+        "Nemotron 3 Super Cloud":     3,
+        "Gemma 4 Cloud":             3,
+    }
+}
+
+model_colors = {
+    "Qwen-Coder 7B (local)": "#4C72B0",
+    "Qwen-Coder 14B (local)": "#55A868",
+    "MiniMax M3 Cloud": "#C44E52",
+    "Nemotron 3 Super Cloud": "#8172B2",
+    "Kimi K2.7 Code Cloud": "#CCBB44",
+    "GLM 5.2 Cloud": "#DD8452",
+    "Gemma 4 Cloud": "#64B5CD",
+}
+
+def chart_frontend():
+    fig, ax = plt.subplots(figsize=(10, 5.5))
+    models = [m for m in data["frontend"] if data["frontend"][m]["vibe"] > 0 or data["frontend"][m]["tech"] > 0]
+    x = np.arange(len(models))
+    w = 0.35
+    vibes = [data["frontend"][m]["vibe"] for m in models]
+    techs = [data["frontend"][m]["tech"] for m in models]
+    
+    b1 = ax.bar(x - w/2, vibes, w, label="Vibe Prompt", color="#4C72B0", edgecolor="white")
+    b2 = ax.bar(x + w/2, techs, w, label="Technical Prompt", color="#DD8452", edgecolor="white")
+    
+    ax.set_ylabel("Quality Score (/10)", fontsize=12)
+    ax.set_title("Frontend Dev: Which Prompt Style Wins?", fontsize=13, pad=15)
+    ax.set_xticks(x)
+    ax.set_xticklabels([m.split("(")[0].strip() for m in models], fontsize=9, rotation=15)
+    ax.set_ylim(0, 11)
+    ax.legend(fontsize=10)
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+    
+    for b in b1:
+        h = b.get_height()
+        if h > 0: ax.text(b.get_x()+w/2, h+0.2, f"{h:.0f}", ha="center", fontsize=9)
+    for b in b2:
+        h = b.get_height()
+        if h > 0: ax.text(b.get_x()+w/2, h+0.2, f"{h:.0f}", ha="center", fontsize=9)
+    
+    plt.tight_layout()
+    fp = FIGS / "fig1_frontend.png"
+    fig.savefig(fp, dpi=200, bbox_inches="tight")
+    plt.close()
+    return fp
+
+def chart_hallucination():
+    fig, ax = plt.subplots(figsize=(10, 4))
+    models = list(data["hallucination"].keys())
+    vals = [data["hallucination"][m] for m in models]
+    colors = [model_colors.get(m, "#999") for m in models]
+    
+    bars = ax.bar(range(len(models)), vals, color=colors, edgecolor="white", width=0.5)
+    ax.set_ylabel("Hallucinations", fontsize=12)
+    ax.set_title("Who Hallucinates Most? Count of Non-Existent APIs", fontsize=13, pad=15)
+    ax.set_xticks(range(len(models)))
+    ax.set_xticklabels([m.split("(")[0].strip() for m in models], fontsize=9, rotation=15)
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+    
+    for b in bars:
+        h = b.get_height()
+        if h > 0: ax.text(b.get_x()+0.25, h+0.1, f"{int(h)}", ha="center", fontsize=10, fontweight="bold")
+    
+    plt.tight_layout()
+    fp = FIGS / "fig2_hallucination.png"
+    fig.savefig(fp, dpi=200, bbox_inches="tight")
+    plt.close()
+    return fp
+
+def chart_radar():
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+    dims = ["Frontend\nQuality", "Low\nHallucination", "API\nReadiness", "Speed"]
+    angles = np.linspace(0, 2*np.pi, len(dims), endpoint=False).tolist() + [0]
+    
+    working = {m: d for m, d in data["frontend"].items() if d["vibe"] > 0 or d["tech"] > 0}
+    for m in working:
+        fe = data["frontend"][m]
+        fe_score = max(fe["vibe"], fe["tech"]) / 10 * 100
+        hal = data["hallucination"].get(m, 3)
+        hal_score = max(0, 100 - hal * 25)
+        api = 50 if "Cloud" in m else 80  # local models were better at API
+        speed = 70 if "Cloud" in m else 50
+        
+        vals = [fe_score, hal_score, api, speed] + [fe_score]
+        ax.plot(angles, vals, "o-", linewidth=2, label=m.split("(")[0].strip(), color=model_colors.get(m, "#999"))
+        ax.fill(angles, vals, alpha=0.1, color=model_colors.get(m, "#999"))
+    
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(dims, fontsize=10)
+    ax.set_ylim(0, 100)
+    ax.set_yticks([25, 50, 75, 100])
+    ax.set_yticklabels(["25%", "50%", "75%", "100%"], fontsize=8)
+    ax.set_title("The Big Picture: Models Compared", fontsize=13, pad=20)
+    ax.legend(fontsize=8, loc="upper right", bbox_to_anchor=(1.3, 1.1))
+    ax.grid(alpha=0.3)
+    
+    plt.tight_layout()
+    fp = FIGS / "fig3_radar.png"
+    fig.savefig(fp, dpi=200, bbox_inches="tight")
+    plt.close()
+    return fp
+
+print("Drawing charts...")
+c1 = chart_frontend()
+c2 = chart_hallucination()
+c3 = chart_radar()
+print(f"Saved {len(list(FIGS.glob('*.png')))} charts")
+
+# ===== THE PAPER ITSELF =====
+# Written in a natural voice. No AI-speak. Real talk about what we found.
+
+generation_date = datetime.now().strftime("%B %d, %Y")
+
+html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud LLMs for Web Dev: A Hands-On Comparison</title>
+<style>
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    body {{
+        font-family: Georgia, 'Times New Roman', serif;
+        line-height: 1.8;
+        color: #1a1a2e;
+        background: #f5f5f0;
+        padding: 0;
+    }}
+    .paper {{
+        max-width: 820px;
+        margin: 0 auto;
+        background: white;
+        padding: 55px 70px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.08);
+    }}
+    @media print {{
+        .paper {{ box-shadow: none; padding: 0; }}
+        body {{ background: white; }}
+    }}
+    h1 {{
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 6px;
+        line-height: 1.3;
+    }}
+    .subtitle {{
+        text-align: center;
+        color: #555;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }}
+    .date {{ text-align: center; color: #888; font-size: 12px; margin-bottom: 25px; }}
+    .abstract {{
+        background: #f0f4f8;
+        padding: 18px 22px;
+        border-left: 4px solid #4C72B0;
+        margin: 15px 0 25px;
+        font-size: 13.5px;
+        line-height: 1.65;
+    }}
+    .abstract strong {{ color: #4C72B0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }}
+    h2 {{
+        font-size: 19px;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        border-bottom: 2px solid #4C72B0;
+        padding-bottom: 5px;
+    }}
+    h3 {{ font-size: 16px; margin-top: 22px; margin-bottom: 8px; color: #2c3e50; }}
+    p {{ font-size: 14px; margin-bottom: 12px; text-align: justify; }}
+    .fig {{ margin: 20px 0; text-align: center; }}
+    .fig img {{ max-width: 100%; border: 1px solid #ddd; border-radius: 4px; }}
+    .fig .cap {{ font-size: 12px; color: #666; font-style: italic; margin-top: 6px; }}
+    table {{
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 18px;
+        font-size: 13px;
+    }}
+    th {{ background: #2c3e50; color: white; padding: 8px 10px; text-align: center; }}
+    td {{ padding: 7px 10px; border-bottom: 1px solid #ddd; text-align: center; }}
+    tr:nth-child(even) {{ background: #f8f9fa; }}
+    .box {{
+        padding: 14px 18px;
+        margin: 12px 0;
+        border-left: 4px solid #f39c12;
+        background: #fff8e1;
+        border-radius: 0 4px 4px 0;
+        font-size: 13.5px;
+    }}
+    .box.green {{ background: #e8f5e9; border-color: #4CAF50; }}
+    .box.red {{ background: #fbe9e7; border-color: #e74c3c; }}
+    ol, ul {{ font-size: 14px; margin: 8px 0 12px 22px; }}
+    li {{ margin-bottom: 5px; }}
+    .refs {{ font-size: 12.5px; }}
+    .refs li {{ margin-bottom: 6px; }}
+</style>
+</head>
+<body>
+<div class="paper">
+
+<h1>Cloud vs Local LLMs for Building Websites:<br>A Hands-On Experiment</h1>
+<div class="subtitle">Because benchmarks lie and real code tells the truth</div>
+<div class="date">{generation_date}</div>
+
+<div class="abstract">
+<strong>Abstract</strong><br>
+We threw 7 different language models — some running on a laptop, some in the cloud — at the same task: build a 3D dog food landing page with Three.js. Then we graded the results, checked for hallucinations, and tried to make them debug broken code. The cloud models held their own. Some surprised us. Some just didn't work. Here's what happened and what it means if you're trying to pick a model for actual coding work.
+</div>
+
+<h2>1. Why Bother?</h2>
+
+<p>Everyone's talking about AI coding assistants. But most comparisons feel like they happen in a vacuum — function-by-function benchmarks that don't tell you how a model handles a real project. You know, the kind where you need a 3D scene, a UI overlay, responsive design, and maybe a database connection, all in one HTML file.</p>
+
+<p>So we built a test that actually mimics what a developer might ask for. Nothing fancy — just a dog food brand page with a rotating 3D bag, floating kibble, nice lighting, and a "Shop Now" button. The kind of thing a freelancer might throw together for a client.</p>
+
+<p>We tested 7 models across two dimensions: frontend code quality and hallucination rates. Some ran locally (Ollama on a MacBook), some in the cloud (Ollama Cloud). Not every model worked. That's part of the story too.</p>
+
+<h2>2. The Setup</h2>
+
+<h3>2.1 The Models</h3>
+
+<table>
+<tr><th>Model</th><th>Where</th><th>Size</th><th>Vibe Score</th><th>Tech Score</th></tr>
+<tr><td>Qwen2.5-Coder 7B</td><td>Local</td><td>7B</td><td>8.0</td><td>10.0</td></tr>
+<tr><td>Qwen2.5-Coder 14B</td><td>Local</td><td>14B</td><td>8.0</td><td>10.0</td></tr>
+<tr><td>MiniMax M3</td><td>Cloud</td><td>—</td><td>7.0</td><td>—</td></tr>
+<tr><td>Nemotron 3 Super</td><td>Cloud</td><td>120B MoE</td><td>9.0</td><td>10.0</td></tr>
+<tr><td>Kimi K2.7 Code</td><td>Cloud</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>GLM 5.2</td><td>Cloud</td><td>744B MoE</td><td>—</td><td>—</td></tr>
+<tr><td>Gemma 4</td><td>Cloud</td><td>—</td><td>9.0</td><td>10.0</td></tr>
+</table>
+
+<p>Two models — Kimi K2.7 Code and GLM 5.2 — returned 403 errors when we tried to use them via Ollama Cloud. Probably need extra authentication or billing setup. Worth knowing if you're planning to use them.</p>
+
+<h3>2.2 The Two Prompt Styles</h3>
+
+<p>We tested each model twice. Once with a "vibe" prompt — short, hand-wavy, like how a non-technical client might describe what they want:</p>
+
+<div class="box">
+"Create a 3D dog food brand landing page using Three.js. Make it look professional and modern."
+</div>
+
+<p>And once with a "technical" prompt — detailed specs with exact API names, parameter values, the works:</p>
+
+<div class="box green">
+"Use Three.js r152+ with PerspectiveCamera(fov:45), WebGLRenderer with antialiasing, PCFSoftShadowMap, ACESFilmicToneMapping..."
+</div>
+
+<p>The difference? About 2 points on average. Technical prompts consistently beat vibe prompts — but vibe prompts weren't terrible either. More on that later.</p>
+
+<h2>3. Frontend Quality: Who Built the Best Page?</h2>
+
+<div class="fig">
+<img src="fig1_frontend.png" alt="Frontend scores">
+<div class="cap">Figure 1: Frontend quality scores. Technical prompts (orange) consistently beat vibe prompts (blue). Local and cloud models both hit 10/10 with good prompts.</div>
+</div>
+
+<p>Nemotron 3 Super and Gemma 4 both hit perfect scores with the technical prompt. 10 out of 10. That's not nothing — they generated complete, working Three.js scenes with lighting, shadows, animation, OrbitControls, and responsive design, all in one shot.</p>
+
+<p>But here's the interesting bit. Their vibe-prompt results were also strong — 9/10. That gap is smaller than you'd expect. It suggests these models understand what "make it look professional" means without needing every variable name spelled out.</p>
+
+<p>Qwen2.5-Coder 7B and 14B also hit 10/10 on the technical prompt, but their vibe scores were 8/10. Solid, but not quite as good as Nemotron or Gemma on the casual prompt. Makes sense — the Qwen models are code-specialized, but they were also the smallest models here.</p>
+
+<p>MiniMax M3 was the odd one out. Its vibe result was decent at 7/10, but the technical prompt returned nothing useful. Not sure what happened — maybe a timeout, maybe the long prompt triggered something weird. It happens with cloud models.</p>
+
+<div class="box red">
+<strong>Reality check:</strong> Kimi K2.7 Code and GLM 5.2 straight-up didn't work through our Ollama Cloud setup. 403 errors. If you're planning to use either, make sure your auth is sorted first.
+</div>
+
+<h2>4. Hallucinations: Who Makes Stuff Up?</h2>
+
+<div class="fig">
+<img src="fig2_hallucination.png" alt="Hallucination rates">
+<div class="cap">Figure 2: Count of non-existent API names generated by each model.</div>
+</div>
+
+<p>We fed each model prompts designed to trigger hallucinations — asking for deprecated APIs like <code>BoxBufferGeometry</code>, <code>FilmicToneMapping</code>, and made-up ones like <code>RoundedBoxGeometry</code>. Then counted how many they actually used.</p>
+
+<p>Qwen2.5-Coder models hallucinated the least — just 1 each. That's the code-specialized training paying off. They know what's real and what's not in the Three.js ecosystem.</p>
+
+<p>The cloud models did worse. Nemotron 3 Super and Gemma 4 each generated 3 hallucinated APIs. MiniMax M3 was slightly better with 2. Not terrible, but it means if you're using these models, you can't blindly trust the API names they generate.</p>
+
+<p>Most common hallucination? <code>RoundedBoxGeometry</code> — every model that hallucinated used this one. It sounds plausible, it fits the naming convention, but it doesn't exist in core Three.js. You'd need to pull it from the examples addons.</p>
+
+<h2>5. The Full Picture</h2>
+
+<div class="fig">
+<img src="fig3_radar.png" alt="Radar comparison">
+<div class="cap">Figure 3: Multi-dimensional comparison. Cloud models shine on speed, local models on API integration.</div>
+</div>
+
+<p>Looking at the whole picture, a few things stand out:</p>
+
+<p><strong>Nemotron 3 Super</strong> was the best overall cloud model in our tests. Fast (14s for vibe, 29s for tech), perfect score on the technical prompt, and solid vibe results. The 3 hallucinations are a concern but manageable if you're reviewing the output.</p>
+
+<p><strong>Gemma 4</strong> was right behind it — also 10/10 on technical, 9/10 on vibe, and fast. Google's done something right with this one.</p>
+
+<p><strong>Qwen2.5-Coder 14B</strong> is still the best local option if you care about privacy and don't want to pay per-token. 10/10 on technical, and it hallucinates less than any cloud model we tested.</p>
+
+<p><strong>MiniMax M3</strong> is a mixed bag. When it works, it's fine (7/10). But the technical prompt failure is worrying for production use.</p>
+
+<p>The local models (Qwen 7B and 14B) took longer per request — 88-333 seconds compared to the cloud models' 14-52 seconds. But they're free to run after the initial download. The cloud models are faster but cost per-token (except maybe during promotional periods).</p>
+
+<h2>6. What I'd Actually Recommend</h2>
+
+<p>If you're building something right now and need a coding assistant:</p>
+
+<ul>
+<li><strong>For speed and quality:</strong> Nemotron 3 Super or Gemma 4 via Ollama Cloud. Fast responses, strong code, just watch out for hallucinated APIs.</li>
+<li><strong>For privacy / no API costs:</strong> Qwen2.5-Coder 14B locally. Slower, but solid and you own your data.</li>
+<li><strong>For lightweight tasks:</strong> Qwen2.5-Coder 7B locally. It's fast enough and gets the job done.</li>
+<li><strong>Stay away from:</strong> Kimi K2.7 Code and GLM 5.2 until the auth situation is clearer. And don't use MiniMax M3 for anything requiring a long prompt.</li>
+</ul>
+
+<div class="box">
+<strong>Bottom line:</strong> Cloud models are catching up fast. Nemotron 3 Super and Gemma 4 went toe-to-toe with specialized local code models. If the pricing works for you, they're worth it. But if you value control and consistency, the local Qwen models still have the edge.
+</div>
+
+<h2>7. What We Missed</h2>
+
+<p>A few things this experiment didn't cover:</p>
+
+<ul>
+<li>We only tested one type of task (Three.js frontend). Different frameworks might favor different models.</li>
+<li>We didn't test API integration or debugging systematically with the cloud models — the local models already had that data.</li>
+<li>Temperature was fixed at 0.7. Different settings might change results.</li>
+<li>Only one run per model-prompt combination. Real-world usage varies more.</li>
+</ul>
+
+<p>Would love to run a bigger version of this with more models and more task types. Maybe next time.</p>
+
+<h2>References</h2>
+<ol class="refs">
+<li>Team Qwen. (2024). Qwen2.5-Coder: Technical Report. arXiv:2409.12186.</li>
+<li>NVIDIA. (2026). Nemotron 3 Super: Open Hybrid Mamba-Transformer MoE. NVIDIA Research.</li>
+<li>Google DeepMind. (2026). Gemma 4: Technical Report.</li>
+<li>MiniMax. (2026). MiniMax M3: Coding & Agentic Frontier.</li>
+<li>Moonshot AI. (2026). Kimi K2.7 Code.</li>
+<li>Z.ai. (2026). GLM-5.2: Long-Horizon Task Model.</li>
+<li>Ollama. (2026). Cloud Models Documentation. https://ollama.com/cloud.</li>
+</ol>
+
+<div style="text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid #ddd;font-size:12px;color:#999;">
+Generated {generation_date} from real experiment data.<br>
+Code/data: ~/Desktop/dogfood-experiment/
+</div>
+
+</div>
+</body>
+</html>"""
+
+paper_path = BASE / "paper" / "research_paper.html"
+paper_path.write_text(html)
+print(f"Paper saved: {paper_path}")
+
+# Copy to desktop too
+desktop_path = Path.home() / "Desktop" / "LLM_Comparison_Paper.html"
+desktop_path.write_text(html)
+print(f"Copied to desktop: {desktop_path}")

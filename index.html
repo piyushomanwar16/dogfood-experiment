@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Model Comparison — Live Demos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f1a; color: #e0e0e0; line-height: 1.6; min-height: 100vh; }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 2rem; margin-bottom: 8px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+  .subtitle { color: #888; margin-bottom: 30px; font-size: 0.95rem; }
+  .card { background: #1a1a2e; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #2a2a4a; }
+  .card h2 { font-size: 1.1rem; color: #ccc; margin-bottom: 4px; }
+  .card .model-name { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .card .provider { color: #667eea; font-size: 0.85rem; margin-bottom: 12px; }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .links a { display: inline-block; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+  .link-vibe { background: #2d2d5e; color: #a8b4ff; }
+  .link-vibe:hover { background: #3d3d7e; transform: translateY(-1px); }
+  .link-tech { background: #3d2d1e; color: #ffb474; }
+  .link-tech:hover { background: #5d3d2e; transform: translateY(-1px); }
+  .link-paper { background: #1e3d2e; color: #74ffb4; }
+  .link-paper:hover { background: #2e5d3e; transform: translateY(-1px); }
+  .score { display: inline-block; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+  .score-good { background: #1a3a2a; color: #4ade80; }
+  .score-ok { background: #3a3a1a; color: #facc15; }
+  .score-bad { background: #3a1a1a; color: #f87171; }
+  .footer { text-align: center; color: #555; font-size: 0.85rem; margin-top: 40px; padding-top: 20px; border-top: 1px solid #222; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>LLM Model Comparison</h1>
+  <div class="subtitle">7 language models build the same 3D dog food landing page — see the results side by side</div>
+
+  <div class="card">
+    <div class="model-name">Nemotron 3 Super (Cloud) ★</div>
+    <div class="provider">NVIDIA · Ollama Cloud</div>
+    <div class="links">
+      <a href="experiments/frontend/nemotron-3-super_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">9/10</span></a>
+      <a href="experiments/frontend/nemotron-3-super_technical/" class="link-tech">Technical Prompt <span class="score score-good">10/10</span></a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="model-name">Gemma 4 (Cloud) ★</div>
+    <div class="provider">Google DeepMind · Ollama Cloud</div>
+    <div class="links">
+      <a href="experiments/frontend/gemma4_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">9/10</span></a>
+      <a href="experiments/frontend/gemma4_technical/" class="link-tech">Technical Prompt <span class="score score-good">10/10</span></a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="model-name">Qwen2.5-Coder 14B (Local)</div>
+    <div class="provider">Alibaba · Ollama Local</div>
+    <div class="links">
+      <a href="experiments/frontend/qwen2.5-coder_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">8/10</span></a>
+      <a href="experiments/frontend/qwen2.5-coder_technical/" class="link-tech">Technical Prompt <span class="score score-good">10/10</span></a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="model-name">Qwen2.5-Coder 7B (Local)</div>
+    <div class="provider">Alibaba · Ollama Local</div>
+    <div class="links">
+      <a href="experiments/frontend/qwen2.5-coder_7b_vibe/" class="link-vibe">Vibe Prompt <span class="score score-good">8/10</span></a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="model-name">MiniMax M3 (Cloud)</div>
+    <div class="provider">MiniMax · Ollama Cloud</div>
+    <div class="links">
+      <a href="experiments/frontend/minimax-m3_vibe/" class="link-vibe">Vibe Prompt <span class="score score-ok">7/10</span></a>
+    </div>
+  </div>
+
+  <div class="card" style="opacity:0.6;">
+    <div class="model-name">Kimi K2.7 Code (Cloud)</div>
+    <div class="provider">Moonshot AI · Ollama Cloud</div>
+    <div class="links"><span style="color:#f87171;font-size:0.9rem;">✗ Failed — 403 auth error</span></div>
+  </div>
+
+  <div class="card" style="opacity:0.6;">
+    <div class="model-name">GLM 5.2 (Cloud)</div>
+    <div class="provider">Z.ai · Ollama Cloud</div>
+    <div class="links"><span style="color:#f87171;font-size:0.9rem;">✗ Failed — 403 auth error</span></div>
+  </div>
+
+  <div class="card" style="border-color:#2a4a2a;">
+    <div class="model-name">📄 Research Paper</div>
+    <div class="provider">Full analysis and methodology</div>
+    <div class="links">
+      <a href="paper/LLM_Comparison_Research_Paper.docx" class="link-paper">Download DOCX</a>
+      <a href="paper/research_paper.html" class="link-paper">View HTML Version</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built with Ollama Cloud · July 2026<br>
+    <a href="https://github.com/piyushomanwar16/dogfood-experiment" style="color:#667eea;">GitHub Repo</a>
+  </div>
+</div>
+</body>
+</html>

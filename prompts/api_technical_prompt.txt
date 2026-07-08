@@ -1,0 +1,17 @@
+Integrate Supabase client SDK into the existing Three.js dog food landing page. Technical requirements:
+
+1. Initialize Supabase client using @supabase/supabase-js from CDN (unpkg.com/@supabase/supabase-js)
+2. Create a 'clicks' table schema:
+   - id: uuid (auto-generated primary key)
+   - timestamp: timestamptz (default: now())
+   - user_agent: text
+   - page_url: text
+   - element: text (which element was clicked)
+3. Add click event listeners to CTA button and 3D bag object
+4. On click: insert row into supabase 'clicks' table via .insert()
+5. Handle errors gracefully with try/catch, log to console
+6. Track page load event as well
+7. Use environment variables or embedded config for supabase URL and anon key
+8. Ensure CORS is handled
+
+Provide complete modified HTML file with embedded JS.

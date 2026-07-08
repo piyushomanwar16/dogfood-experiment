@@ -1,0 +1,41 @@
+Build a complete, production-quality 3D dog food landing page using Three.js (r152+ via CDN/ESM). Technical specifications:
+
+**Scene Setup:**
+- PerspectiveCamera (fov: 45, near: 0.1, far: 1000) positioned at (0, 2, 8)
+- WebGLRenderer with antialiasing, shadow mapping enabled (PCFSoftShadowMap), toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.2
+- Renderer size: window.innerWidth x window.innerHeight, pixelRatio: Math.min(window.devicePixelRatio, 2)
+
+**Lighting:**
+- AmbientLight: intensity 0.4
+- DirectionalLight: position (5, 10, 7), intensity 1.0, castShadow: true, shadow map size 2048x2048
+- HemisphereLight: sky #87CEEB, ground #3e7a3e, intensity 0.6
+
+**3D Objects:**
+- A dog food bag created with BoxGeometry(1.5, 2.2, 0.8), rounded via BufferGeometry custom vertices or use RoundedBoxGeometry from the examples
+- Texture: generate a canvas texture with dog food brand colors (#8B4513 brown, #DAA520 gold, #2E8B57 green) and text "PREMIUM DOG FOOD"
+- kibble pieces: 30-50 small TorusGeometry or SphereGeometry objects scattered around, slowly orbiting
+- A ground plane: CircleGeometry(4, 32) receiving shadows
+
+**Animation Loop:**
+- Dog food bag: smooth Y-axis rotation (0.3 rad/s), gentle bobbing (sine wave, amplitude 0.05, frequency 0.5)
+- Kibble pieces: orbit around center at varying radii (2-3.5), speeds (0.1-0.3 rad/s), with individual Y-axis oscillation
+- All animations via requestAnimationFrame, delta-time-based for consistent speed
+
+**UI Overlay:**
+- HTML/CSS overlay with flexbox centered layout
+- Header: "PREMIUM DOG FOOD" in bold serif font (#2C1810), text-shadow for depth, 2.5rem size
+- Subheader: "Crafted with love. Backed by science." in lighter weight
+- CTA button: rounded, gradient background (#DAA520 to #8B4513), hover glow effect, box-shadow transition
+- Z-index management: overlay above canvas
+
+**Responsive:**
+- Handle window resize: update camera aspect ratio, renderer size
+- Mobile: reduce FOV to 50, reposition camera to (0, 3, 10)
+- Touch: device orientation or pointer lock optional
+
+**Performance:**
+- Use InstancedMesh for kibble if more than 50
+- Dispose geometries and materials on scene unmount
+- Frustum culling enabled
+
+Deliver a single self-contained HTML file with embedded CSS and JS using ES modules from CDN (unpkg.com/three@0.160.0/build/three.module.js). Include OrbitControls for interactive viewing.

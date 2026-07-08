@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Premium Dog Food – 3D Landing Page</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#111;color:#fff;font-family:Georgia,serif;}
+  #canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+  #overlay{
+    position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;z-index:10;
+    pointer-events:none; /* let clicks fall through to canvas */
+  }
+  #overlay *{pointer-events:auto;}
+  h1{
+    font-size:2.5rem;font-weight:bold;color:#2C1810;
+    text-shadow:0 0 6px rgba(255,255,255,0.7),0 2px 4px rgba(0,0,0,0.5);
+    margin-bottom:0.5rem;
+  }
+  p{
+    font-size:1.2rem;color:#555;margin-bottom:2rem;
+    text-shadow:0 0 3px rgba(255,255,255,0.4);
+  }
+  .cta{
+    display:inline-block;padding:1rem 2.5rem;
+    background:linear-gradient(135deg,#DAA520,#8B4513);
+    color:#fff;border:none;border-radius:50px;
+    font-size:1.1rem;font-weight:600;cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    transition:all 0.3s ease;
+  }
+  .cta:hover{
+    box-shadow:0 0 20px rgba(218,165,32,0.8),0 0 30px rgba(139,69,19,0.6);
+    transform:translateY(-2px);
+  }
+  @media (max-width:768px){
+    h1{font-size:2rem;}
+    p{font-size:1rem;}
+    .cta{padding:0.8rem 2rem;font-size:1rem;}
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="overlay">
+  <h1>PREMIUM DOG FOOD</h1>
+  <p>Crafted with love. Backed by science.</p>
+  <button class="cta">Shop Now</button>
+</div>
+
+<script type="module">
+  import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+  import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+  import { RoundedBoxGeometry } from 'https://unpkg.com/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js';
+
+  // ----- Scene, Camera, Renderer -----
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 2, 8);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('canvas') });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+
+  // ----- Lights -----
+  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  scene.add(ambient);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 7);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 2048;
+  dirLight.shadow.mapSize.height = 2048;
+  scene.add(dirLight);
+
+  const hemi = new THREE.HemisphereLight(0x87CEEB, 0x3e7a3e, 0.6);
+  scene.add(hemi);
+
+  // ----- Ground -----
+  const groundGeo = new THREE.CircleGeometry(4, 32);
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // ----- Dog Food Bag -----
+  const bagGeo = new RoundedBoxGeometry(1.5, 2.2, 0.8, 0.15, 4);
+  // Canvas texture
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 512; canvas.height = 512;
+  ctx.fillStyle = '#8B4513'; // brown base
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // gold stripe
+  ctx.fillStyle = '#DAA520';
+  ctx.fillRect(0, canvas.height * 0.3, canvas.width, canvas.height * 0.4);
+  // green text
+  ctx.fillStyle = '#2E8B57';
+  ctx.font = 'bold 96px Georgia';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('PREMIUM DOG FOOD', canvas.width / 2, canvas.height / 2);
+  const bagTex = new THREE.CanvasTexture(canvas);
+  bagTex.encoding = THREE.sRGBEncoding;
+  const bagMat = new THREE.MeshStandardMaterial({ map: bagTex });
+  const bag = new THREE.Mesh(bagGeo, bagMat);
+  bag.castShadow = true;
+  bag.receiveShadow = true;
+  scene.add(bag);
+
+  // ----- Kibble (InstancedMesh) -----
+  const kibbleCount = 50;
+  const kibbleGeo = new THREE.SphereGeometry(0.07, 8, 8);
+  const kibbleMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+  const kibble = new THREE.InstancedMesh(kibbleGeo, kibbleMat, kibbleCount);
+  kibble.instanceMatrix.setUsageTHREE.DynamicDrawUsage; // we will update each frame
+  kibble.castShadow = true;
+  scene.add(kibble);
+
+  // per-instance parameters
+  const kibbleParams = [];
+  const dummy = new THREE.Object3D();
+  for (let i = 0; i < kibbleCount; i++) {
+    const radius = 2 + Math.random() * 1.5;
+    const speed = 0.1 + Math.random() * 0.2;
+    const phase = Math.random() * Math.PI * 2;
+    const yOffset = 0.1 + Math.random() * 0.3;
+    const ySpeed = 0.2 + Math.random() * 0.4;
+    kibbleParams.push({ radius, speed, phase, yOffset, ySpeed });
+    // initial position
+    dummy.position.set(Math.cos(phase) * radius, kibbleParams[i].yOffset, Math.sin(phase) * radius);
+    dummy.updateMatrix();
+    kibble.setMatrixAt(i, dummy.matrix);
+  }
+  kibble.instanceMatrix.needsUpdate = true;
+
+  // ----- OrbitControls -----
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.minDistance = 3;
+  controls.maxDistance = 20;
+
+  // ----- Animation Loop -----
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = clock.getElapsedTime();
+
+    // Bag animation
+    bag.rotation.y += 0.3 * (1/60); // 0.3 rad/s approx
+    bag.position.y = Math.sin(elapsed * 0.5) * 0.05; // bobbing
+
+    // Kibble animation
+    kibbleParams.forEach((p, i) => {
+      const angle = elapsed * p.speed + p.phase;
+      const y = p.yOffset + Math.sin(elapsed * p.ySpeed + p.phase) * 0.05;
+      dummy.position.set(Math.cos(angle) * p.radius, y, Math.sin(angle) * p.radius);
+      dummy.updateMatrix();
+      kibble.setMatrixAt(i, dummy.matrix);
+    });
+    kibble.instanceMatrix.needsUpdate = true;
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // ----- Responsive handling -----
+  function onWindowResize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    // mobile breakpoints
+    if (w < 768) {
+      camera.fov = 50;
+      camera.position.set(0, 3, 10);
+    } else {
+      camera.fov = 45;
+      camera.position.set(0, 2, 8);
+    }
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', onWindowResize);
+  window.addEventListener('orientationchange', onWindowResize);
+  // Cleanup on unload
+  window.addEventListener('beforeunload', () => {
+    // dispose geometries/materials
+    bagGeo.dispose();
+    bagMat.dispose();
+    groundGeo.dispose();
+    groundMat.dispose();
+    kibbleGeo.dispose();
+    kibbleMat.dispose();
+    kibble.dispose();
+    dirLight.dispose();
+    ambient.dispose();
+    hemi.dispose();
+    renderer.dispose();
+    controls.dispose();
+  });
+</script>
+</body>
+</html>

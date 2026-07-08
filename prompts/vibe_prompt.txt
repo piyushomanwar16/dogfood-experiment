@@ -1,0 +1,9 @@
+Create a 3D dog food brand landing page using Three.js. Make it look professional and modern. It should have:
+
+1. A 3D scene with a rotating dog food bag or kibble pieces floating around
+2. Nice lighting and colors (warm tones, pet-friendly feel)
+3. A headline "Premium Dog Food" with a subtitle
+4. A "Shop Now" button
+5. The background should look nice with some atmospheric effects
+
+Make it a complete HTML file that works when opened in a browser. Keep it simple but impressive visually.

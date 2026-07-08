@@ -1,0 +1,1 @@
+This Three.js dog food website has some bugs. Fix them to make it work properly. The 3D scene should show a rotating dog food bag with kibble pieces floating around. The visual style should be warm and professional.

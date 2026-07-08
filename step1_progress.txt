@@ -1,0 +1,5 @@
+Querying qwen2.5-coder:7b...
+Response time: 66.5s
+Response length: 3429 chars
+HTML extracted: 2206 chars
+Done

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawFeast | Premium Dog Food</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #fff5e6 0%, #ffcc80 100%);
+        }
+
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding-left: 10%;
+            z-index: 10;
+            color: #5d4037;
+        }
+
+        .content {
+            max-width: 600px;
+            pointer-events: auto;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.1;
+            color: #8d6e63;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 20px 0 40px 0;
+            color: #795548;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: #ff9800;
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.3);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: #f57c00;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(255, 152, 0, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div class="content">
+            <h1>Premium<br>Dog Food</h1>
+            <p>Nutritiously balanced, vet-approved, and crafted with 100% organic ingredients to keep your best friend happy and healthy.</p>
+            <a href="#" class="btn">Shop Now</a>
+        </div>
+    </div>
+
+    <!-- Load Three.js from CDN -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+        // --- Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.5);
+        mainLight.position.set(5, 10, 7.5);
+        mainLight.castShadow = true;
+        scene.add(mainLight);
+
+        const fillLight = new THREE.PointLight(0xffcc80, 1);
+        fillLight.position.set(-5, 0, 2);
+        scene.add(fillLight);
+
+        // --- The "Food Bag" (Procedural) ---
+        // Since we don't have an external .glb, we create a stylized bag using a Cylinder
+        const bagGroup = new THREE.Group();
+
+        const bagGeometry = new THREE.CylinderGeometry(1, 1, 2.5, 32);
+        const bagMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8d6e63, 
+            roughness: 0.3,
+            metalness: 0.1 
+        });
+        const bag = new THREE.Mesh(bagGeometry, bagMaterial);
+        bag.castShadow = true;
+        bagGroup.add(bag);
+
+        // Add a "Label" to the bag
+        const labelGeo = new THREE.CylinderGeometry(1.01, 1.01, 1, 32);
+        const labelMat = new THREE.MeshStandardMaterial({ color: 0xfff5e6 });
+        const label = new THREE.Mesh(labelGeo, labelMat);
+        label.position.y = 0;
+        bagGroup.add(label);
+
+        scene.add(bagGroup);
+        bagGroup.position.x = 2; // Shift to the right to make room for text
+
+        // --- The "Kibble" (Floating Particles) ---
+        const kibbleCount = 60;
+        const kibblePieces = [];
+        const kibbleGeo = new THREE.SphereGeometry(0.08, 8, 8);
+        const kibbleMat = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+
+        for (let i = 0; i < kibbleCount; i++) {
+            const piece = new THREE.Mesh(kibbleGeo, kibbleMat);
+            
+            // Random positions
+            piece.position.set(
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10
+            );
+            
+            // Random rotation
+            piece.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+            
+            // Custom properties for animation
+            piece.userData = {
+                speed: 0.005 + Math.random() * 0.01,
+                floatRange: 0.5 + Math.random() * 1,
+                offset: Math.random() * Math.PI * 2
+            };
+
+            scene.add(piece);
+            kibblePieces.push(piece);
+        }
+
+        camera.position.z = 6;
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Rotate the bag
+            bagGroup.rotation.y += 0.01;
+            bagGroup.position.y = Math.sin(time) * 0.2;
+
+            // Animate kibble
+            kibblePieces.forEach((piece, index) => {
+                piece.position.y += Math.sin(time + piece.userData.offset) * 0.005;
+                piece.rotation.x += piece.userData.speed;
+                piece.rotation.y += piece.userData.speed;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

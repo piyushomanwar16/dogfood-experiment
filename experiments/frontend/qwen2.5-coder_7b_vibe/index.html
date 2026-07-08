@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Dog Food</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        .container {
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Premium Dog Food</h1>
+        <p>Discover the best in premium dog food.</p>
+        <button id="shopNow">Shop Now</button>
+    </div>
+
+    <script src="https://threejs.org/build/three.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+        scene.add(ambientLight);
+
+        // Directional light
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 5, 5).normalize();
+        scene.add(directionalLight);
+
+        // Dog food bag geometry and material
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshLambertMaterial({ color: 0xff6347 });
+        const dogFoodBag = new THREE.Mesh(geometry, material);
+        scene.add(dogFoodBag);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            dogFoodBag.rotation.x += 0.01;
+            dogFoodBag.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Camera positioning
+        camera.position.z = 5;
+
+        // Button functionality
+        document.getElementById('shopNow').addEventListener('click', function() {
+            alert('Shop Now button clicked!');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+Add Supabase database integration to this 3D dog food website. I want to store when people click the "Shop Now" button. Create a simple table and connect it so clicks are logged to the database.

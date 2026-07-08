@@ -1,0 +1,6 @@
+Testing qwen2.5-coder:7b frontend vibe...
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+    result = run_frontend_single('qwen2.5-coder:7b', 'vibe')
+             ^^^^^^^^^^^^^^^^^^^
+NameError: name 'run_frontend_single' is not defined
