@@ -32,7 +32,8 @@ Each model individually built a full ecommerce page with 3D hero, product catalo
 
 ## Paper
 
-- [Verified Results Paper (.docx)](paper/LLM_Verified_Research_Paper.docx) — Full academic paper with exact prompts, one-by-one methodology, and verified 10/10 ecommerce results
+- [Comprehensive Paper (10 charts, linguistic analysis)](paper/LLM_Verified_Comprehensive_Paper.docx) — Full academic paper with pie/radar/heatmap/burstiness charts, linguistic analysis, and human-like scientific writing
+- [Condensed Paper (.docx)](paper/LLM_Verified_Research_Paper.docx) — Shorter version with exact prompts and core results
 
 ## How It Works
 
