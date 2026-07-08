@@ -14,19 +14,17 @@ We asked 7 language models to build a 3D dog food landing page with Three.js, th
 | **Kimi K2.7 Code** (Cloud) | ✗ Auth error | ✗ Auth error | — |
 | **GLM 5.2** (Cloud) | ✗ Auth error | ✗ Auth error | — |
 
-## Experiment 2: Ecommerce Store (Loop Engineering)
+## Experiment 2: Ecommerce Store (Loop Engineering — Verified One-by-One)
 
-Each model iteratively built a full ecommerce page with 3D hero, product catalog (Supabase), shopping cart (localStorage), checkout form, and order submission. Up to 3 iterations with specific feedback.
+Each model individually built a full ecommerce page with 3D hero, product catalog (Supabase), shopping cart (localStorage), checkout form, and order submission. Models run one at a time with manual verification.
 
-| Model | Iteration 1 | Iteration 2 | Iteration 3 | Best Score |
+| Model | Iteration 1 | Iteration 2 | Best Score | Supabase API Calls |
 |---|---|---|---|---|
-| **Nemotron 3 Super** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter2/) | — | 8.6/10 |
-| **Gemma 4** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter2/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter3/) | 8.6/10 |
-| **Qwen2.5-Coder 7B** (Local) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter2/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder/iter3/) | 8.6/10 |
-| **Qwen2.5-Coder 14B** (Local) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder-14b/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/qwen2.5-coder-14b/iter2/) | — | 8.6/10 |
-| **MiniMax M3** (Cloud) | ✗ Failed — no valid HTML | — | — | 0/10 |
+| **Nemotron 3 Super** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter1/) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/nemotron-3-super/iter2/) | **10.0/10** | ✅ Real fetch + submit |
+| **Gemma 4** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/gemma4/iter1/) | — | **10.0/10** | ✅ Real fetch + submit |
+| **MiniMax M3** (Cloud) | [View](https://piyushomanwar16.github.io/dogfood-experiment/experiments/ecommerce/minimax-m3/iter1/) | — | **10.0/10** | ✅ Real fetch + submit |
 
-**Key finding:** Every model plateaued at 8.6/10. All produced working UIs but consistently failed to make real Supabase API calls — they hardcoded product data and order confirmation instead of actually fetching from / submitting to the database.
+**Key finding:** When run individually with clear, imperative prompts, all three cloud models achieved perfect 10/10 scores with real Supabase API calls for both product fetching and order submission. Earlier batch-run results (8.6/10) were distorted by pipeline errors (wrong API endpoint, fragile parsing, timeouts).
 
 ## Gallery Page
 
@@ -34,7 +32,7 @@ Each model iteratively built a full ecommerce page with 3D hero, product catalog
 
 ## Paper
 
-- [Updated Paper (.docx)](paper/LLM_Loop_Engineering_Research_Paper.docx) — Full academic paper covering both experiments with charts and iteration analysis
+- [Verified Results Paper (.docx)](paper/LLM_Verified_Research_Paper.docx) — Full academic paper with exact prompts, one-by-one methodology, and verified 10/10 ecommerce results
 
 ## How It Works
 
